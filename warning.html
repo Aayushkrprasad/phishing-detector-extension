@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Phishing Warning</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff3f3;
+      color: #721c24;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .box {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      border: 2px solid #f5c6cb;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    button {
+      margin: 10px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #backBtn {
+      background: #dc3545;
+      color: white;
+    }
+
+    #continueBtn {
+      background: #6c757d;
+      color: white;
+    }
+
+    #siteInfo {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #333;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>⚠ Warning</h1>
+    <p>This website may be a phishing page.</p>
+    <p>Be careful before entering password, OTP, or bank details.</p>
+    <div id="siteInfo"></div>
+    <button id="backBtn">Go Back</button>
+    <button id="continueBtn">Continue Anyway</button>
+  </div>
+
+  <script src="warning.js"></script>
+</body>
+</html>
