@@ -17,9 +17,9 @@
     }
   ],
   "web_accessible_resources": [
-    {
-      "resources": ["warning.html", "warning.js"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  {
+    "resources": ["warning.html", "warning.js", "history.html", "history.js"],
+    "matches": ["<all_urls>"]
+  }
+]
 }

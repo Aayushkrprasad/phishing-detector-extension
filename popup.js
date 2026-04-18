@@ -145,10 +145,24 @@ chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       box.className = className;
       box.innerText = text;
 
-      if (data.risk >= 60) {
-        let warningUrl = chrome.runtime.getURL("warning.html") + "?url=" + encodeURIComponent(data.currentUrl);
-        chrome.tabs.update(tabs[0].id, { url: warningUrl });
-      }
+      let historyItem = {
+        url: data.currentUrl,
+        risk: data.risk,
+        level: level,
+        time: new Date().toLocaleString()
+      };
+
+      chrome.storage.local.get(["history"], function(result) {
+        let history = result.history || [];
+        history.unshift(historyItem);
+        chrome.storage.local.set({ history: history });
+      });
     }
   );
+});
+
+document.getElementById("viewHistory").addEventListener("click", function() {
+  chrome.tabs.create({
+    url: chrome.runtime.getURL("history.html")
+  });
 });
