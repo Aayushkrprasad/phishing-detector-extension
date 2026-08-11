@@ -1,51 +1,612 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Scan History</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Analytics & Threat Log - Phishing Detector Pro</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <style>
+    :root {
+      --bg-primary: #090D16;
+      --bg-card: rgba(18, 24, 38, 0.9);
+      --bg-card-hover: rgba(28, 38, 60, 0.95);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(59, 130, 246, 0.3);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-subtle: #64748B;
+      
+      --accent-safe: #10B981;
+      --accent-warn: #F59E0B;
+      --accent-danger: #EF4444;
+      --accent-blue: #3B82F6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      padding: 15px;
-      background: #f5f5f5;
-      width: 320px;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      padding: 36px 24px;
+      min-height: 100vh;
     }
 
-    h2 {
-      text-align: center;
-      margin-top: 0;
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
 
-    .item {
-      background: white;
+    /* Header */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .shield-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2563EB, #1D4ED8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);
+    }
+
+    .shield-badge svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .subheading {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 8px 16px;
       border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      word-break: break-all;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border-color);
     }
 
-    .safe {
-      border-left: 5px solid green;
+    .btn-primary {
+      background: linear-gradient(135deg, #2563EB, #1D4ED8);
+      color: white;
+      border: none;
     }
 
-    .suspicious {
-      border-left: 5px solid orange;
+    .btn-primary:hover {
+      background: #3B82F6;
     }
 
-    .danger {
-      border-left: 5px solid red;
+    .btn-outline {
+      background: var(--bg-card);
+      color: var(--text-main);
     }
 
-    .time {
+    .btn-outline:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: var(--bg-card-hover);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-danger);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: var(--accent-danger);
+      color: white;
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .kpi-icon-box {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .kpi-blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+    .kpi-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+    .kpi-yellow { background: rgba(245, 158, 11, 0.15); color: var(--accent-warn); }
+    .kpi-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-safe); }
+
+    .kpi-val {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .kpi-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Distribution Bar */
+    .threat-dist-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dist-title-row {
+      display: flex;
+      justify-content: space-between;
       font-size: 12px;
-      color: gray;
-      margin-top: 5px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .dist-bar-track {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .dist-seg-safe { background: var(--accent-safe); transition: width 0.4s ease; }
+    .dist-seg-warn { background: var(--accent-warn); transition: width 0.4s ease; }
+    .dist-seg-danger { background: var(--accent-danger); transition: width 0.4s ease; }
+
+    .dist-legend {
+      display: flex;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Filters Bar */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-pill {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .filter-pill.active {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .search-input {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      width: 240px;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    /* Scan History Table */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .history-table th {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 12px 18px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-subtle);
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .history-table td {
+      padding: 14px 18px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    .history-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      cursor: pointer;
+    }
+
+    .host-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-width: 320px;
+    }
+
+    .host-text {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .url-subtext {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-safe { background: rgba(16, 185, 129, 0.15); color: var(--accent-safe); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-warn { background: rgba(245, 158, 11, 0.15); color: var(--accent-warn); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .threat-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .time-cell {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      color: var(--text-subtle);
+      margin-bottom: 12px;
+    }
+
+    /* Details Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      width: 500px;
+      max-width: 90vw;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
   </style>
 </head>
 <body>
-  <h2>Scan History</h2>
-  <div id="historyList">Loading...</div>
+  <div class="container">
+    <!-- Header -->
+    <div class="header-bar">
+      <div class="header-left">
+        <div class="shield-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Security Analytics & Forensic Log</h1>
+          <div class="subheading">Real-time telemetry, threat distribution and audit reports</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="sandbox.html" class="btn btn-outline" style="color: #93C5FD; border-color: rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.15); text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span>Security Lab</span>
+        </a>
+        <a href="trusted.html" class="btn btn-outline" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>Rules</span>
+        </a>
+        <button id="exportCsvBtn" class="btn btn-outline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Export CSV</span>
+        </button>
+        <button id="exportJsonBtn" class="btn btn-outline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+          <span>Export JSON</span>
+        </button>
+        <button id="clearHistoryBtn" class="btn btn-danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          <span>Clear Logs</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Summary Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon-box kpi-blue">🌐</div>
+        <div>
+          <div id="statTotal" class="kpi-val">0</div>
+          <div class="kpi-lbl">Total Sites Scanned</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-box kpi-red">🚨</div>
+        <div>
+          <div id="statHighRisk" class="kpi-val">0</div>
+          <div class="kpi-lbl">Phishing Threats</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-box kpi-yellow">⚠️</div>
+        <div>
+          <div id="statSuspicious" class="kpi-val">0</div>
+          <div class="kpi-lbl">Suspicious Sites</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-box kpi-green">🛡️</div>
+        <div>
+          <div id="statSafeRate" class="kpi-val">100%</div>
+          <div class="kpi-lbl">Safe Domain Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Threat Distribution Bar -->
+    <div class="threat-dist-card">
+      <div class="dist-title-row">
+        <span>SECURITY DISTRIBUTION OVERVIEW</span>
+        <span id="distTotalLabel">0 Analyzed Domains</span>
+      </div>
+      <div class="dist-bar-track">
+        <div id="distSegSafe" class="dist-seg-safe" style="width: 100%;"></div>
+        <div id="distSegWarn" class="dist-seg-warn" style="width: 0%;"></div>
+        <div id="distSegDanger" class="dist-seg-danger" style="width: 0%;"></div>
+      </div>
+      <div class="dist-legend">
+        <div class="legend-item"><span class="legend-dot" style="background: var(--accent-safe)"></span> Safe (<span id="legendSafe">0</span>)</div>
+        <div class="legend-item"><span class="legend-dot" style="background: var(--accent-warn)"></span> Suspicious (<span id="legendWarn">0</span>)</div>
+        <div class="legend-item"><span class="legend-dot" style="background: var(--accent-danger)"></span> Phishing Danger (<span id="legendDanger">0</span>)</div>
+      </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="filter-bar">
+      <div class="filter-pills">
+        <button class="filter-pill active" data-filter="ALL">All Events (<span id="countAll">0</span>)</button>
+        <button class="filter-pill" data-filter="HIGH_RISK">High Risk (<span id="countDanger">0</span>)</button>
+        <button class="filter-pill" data-filter="SUSPICIOUS">Suspicious (<span id="countWarn">0</span>)</button>
+        <button class="filter-pill" data-filter="SAFE">Safe (<span id="countSafe">0</span>)</button>
+      </div>
+
+      <input type="text" id="searchInput" class="search-input" placeholder="Search domain or keyword...">
+    </div>
+
+    <!-- Log Table -->
+    <div class="table-card">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>TARGET DOMAIN</th>
+            <th>RISK SCORE</th>
+            <th>SECURITY STATUS</th>
+            <th>PRIMARY DETECTION FLAG</th>
+            <th>SCAN TIMESTAMP</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <h3>No scan logs found</h3>
+        <p style="margin-top: 4px; font-size: 13px;">Sites you browse will automatically be analyzed and logged here.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalHost">Domain Details</h3>
+        <button class="modal-close" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
 
   <script src="history.js"></script>
 </body>

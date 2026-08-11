@@ -1,25 +1,49 @@
 {
   "manifest_version": 3,
-  "name": "Phishing Detector",
-  "version": "1.0",
-  "permissions": ["tabs", "scripting", "storage", "activeTab"],
-  "host_permissions": ["<all_urls>"],
+  "name": "Phishing Detector Pro",
+  "version": "3.5",
+  "description": "Enterprise-grade real-time AI & Heuristic Phishing, Typosquatting & Threat Detection Suite with Interactive Security Lab.",
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage",
+    "activeTab",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "background": {
     "service_worker": "service-worker.js"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_title": "Phishing Detector Pro"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["heuristics.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
-  {
-    "resources": ["warning.html", "warning.js", "history.html", "history.js"],
-    "matches": ["<all_urls>"]
-  }
-]
+    {
+      "resources": [
+        "heuristics.js",
+        "warning.html",
+        "warning.js",
+        "history.html",
+        "history.js",
+        "trusted.html",
+        "trusted.js",
+        "sandbox.html",
+        "sandbox.js",
+        "sandbox.css",
+        "content.css"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
