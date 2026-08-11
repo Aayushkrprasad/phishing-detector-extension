@@ -1,64 +1,205 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Phishing Warning</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Alert - Phishing Detector Pro</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #fff3f3;
-      color: #721c24;
-      padding: 30px;
-      text-align: center;
+    :root {
+      --bg-primary: #0B0F19;
+      --bg-card: #151D2A;
+      --border-color: rgba(239, 68, 68, 0.2);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --accent-danger: #EF4444;
+      --primary-blue: #3B82F6;
     }
 
-    .box {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      border: 2px solid #f5c6cb;
-      border-radius: 10px;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       padding: 20px;
     }
 
+    .warning-card {
+      max-width: 520px;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 36px 28px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .warning-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #EF4444, #F59E0B, #EF4444);
+    }
+
+    .alert-icon-wrap {
+      width: 80px;
+      height: 80px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 2px solid rgba(239, 68, 68, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+      color: var(--accent-danger);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.2); }
+    }
+
     h1 {
-      margin-top: 0;
+      font-size: 24px;
+      font-weight: 800;
+      color: #F8FAFC;
+      margin-bottom: 8px;
     }
 
-    button {
-      margin: 10px;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+    .subtitle {
+      color: #FCA5A5;
       font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 20px;
     }
 
-    #backBtn {
-      background: #dc3545;
-      color: white;
-    }
-
-    #continueBtn {
-      background: #6c757d;
-      color: white;
-    }
-
-    #siteInfo {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #333;
+    .target-url-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
       word-break: break-all;
+      margin-bottom: 24px;
+    }
+
+    .target-url {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .warning-points {
+      text-align: left;
+      background: rgba(239, 68, 68, 0.05);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #CBD5E1;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .point-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-back {
+      background: var(--accent-danger);
+      color: white;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-back:hover {
+      background: #DC2626;
+    }
+
+    .btn-continue {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .btn-continue:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>⚠ Warning</h1>
-    <p>This website may be a phishing page.</p>
-    <p>Be careful before entering password, OTP, or bank details.</p>
-    <div id="siteInfo"></div>
-    <button id="backBtn">Go Back</button>
-    <button id="continueBtn">Continue Anyway</button>
+  <div class="warning-card">
+    <div class="alert-icon-wrap">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+
+    <h1>Phishing Threat Warning</h1>
+    <p class="subtitle">Phishing Detector Pro intercepted a high-risk URL</p>
+
+    <div class="target-url-box">
+      <span>Destination: </span>
+      <span id="siteInfo" class="target-url">Loading URL...</span>
+    </div>
+
+    <div class="warning-points">
+      <div class="point-item">
+        <span>🚨</span>
+        <span>This website has characteristics of a deceptive or spoofed login page.</span>
+      </div>
+      <div class="point-item">
+        <span>🔒</span>
+        <span>Do not enter passwords, credit card numbers, or OTPs on this page.</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="backBtn" class="btn btn-back">🛡️ Go Back to Safety</button>
+      <button id="continueBtn" class="btn btn-continue">I understand the risk, continue anyway</button>
+    </div>
   </div>
 
   <script src="warning.js"></script>

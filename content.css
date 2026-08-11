@@ -1,0 +1,230 @@
+/* Phishing Detector Pro - Content In-Page Protection Styles */
+
+/* 1. In-Page Hover Link Shield Badge */
+#pdp-link-shield {
+  position: absolute;
+  z-index: 2147483647;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(59, 130, 246, 0.2);
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateY(4px);
+  opacity: 0;
+}
+
+#pdp-link-shield.pdp-visible {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pdp-shield-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pdp-shield-safe {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.pdp-shield-warn {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
+.pdp-shield-danger {
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.pdp-shield-text {
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.pdp-shield-host {
+  color: #94a3b8;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pdp-shield-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pdp-tag-safe {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.pdp-tag-warn {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.pdp-tag-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* 2. In-Page Credential Guard Banner */
+.pdp-credential-guard-banner {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-left: 4px solid #ef4444;
+  border-radius: 8px;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  animation: pdp-slide-down 0.3s ease-out;
+  z-index: 999999;
+}
+
+@keyframes pdp-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pdp-guard-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.pdp-guard-content {
+  flex: 1;
+}
+
+.pdp-guard-title {
+  font-weight: 700;
+  color: #f87171;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdp-guard-desc {
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.pdp-guard-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.pdp-guard-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 3. Real-time Security Toast Alerts (Clipboard Hijack & Fake OAuth) */
+.pdp-toast-alert {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  max-width: 380px;
+  padding: 14px 18px;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  border-left: 4px solid #ef4444;
+  border-radius: 10px;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: pdp-slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pdp-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.pdp-toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.pdp-toast-body strong {
+  display: block;
+  font-size: 13px;
+  color: #f87171;
+  margin-bottom: 2px;
+}
+
+.pdp-toast-body p {
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.pdp-toast-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+.pdp-toast-close:hover {
+  color: #fff;
+}

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Rules & Domain Lists - Phishing Detector Pro</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <style>
+    :root {
+      --bg-primary: #090D16;
+      --bg-card: rgba(18, 24, 38, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --accent-safe: #10B981;
+      --accent-danger: #EF4444;
+      --accent-blue: #3B82F6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      padding: 36px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 750px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #2563EB, #1D4ED8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-box svg {
+      width: 22px;
+      height: 22px;
+      color: white;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .subheading {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Tabs */
+    .tab-nav {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active-whitelist {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: var(--accent-safe);
+    }
+
+    .tab-btn.active-blacklist {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: var(--accent-danger);
+    }
+
+    /* Add Card */
+    .add-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .domain-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .domain-input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-add-safe { background: var(--accent-safe); color: #090D16; }
+    .btn-add-danger { background: var(--accent-danger); color: white; }
+
+    /* Site List */
+    .list-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .site-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    .site-domain {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btn-remove {
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--accent-danger);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .btn-remove:hover {
+      background: var(--accent-danger);
+      color: white;
+    }
+
+    .empty-box {
+      padding: 30px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title-group">
+        <div class="icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Security Rules & Domain Lists</h1>
+          <div class="subheading">Configure custom trusted domains (Whitelist) and blocked domains (Blacklist)</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <a href="sandbox.html" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93C5FD; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+          <span>⚡ Security Lab</span>
+        </a>
+        <a href="history.html" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+          <span>📊 Analytics</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="tab-nav">
+      <button id="tabWhitelist" class="tab-btn active-whitelist">
+        <span>🛡️ Trusted Sites (Whitelist)</span>
+        <span id="whitelistCount">(0)</span>
+      </button>
+      <button id="tabBlacklist" class="tab-btn">
+        <span>🚫 Blocked Sites (Blacklist)</span>
+        <span id="blacklistCount">(0)</span>
+      </button>
+    </div>
+
+    <!-- Add Domain Form -->
+    <div class="add-card">
+      <div id="formTitle" style="font-size: 13px; font-weight: 700;">Add Trusted Domain (Bypasses Threat Warnings)</div>
+      <form id="addDomainForm" class="form-row">
+        <input type="text" id="domainInput" class="domain-input" placeholder="e.g. internal.company.com" required>
+        <button type="submit" id="addBtn" class="btn btn-add-safe">Add to List</button>
+      </form>
+    </div>
+
+    <!-- Domain List -->
+    <div class="list-card">
+      <div class="list-header">
+        <span id="currentListTitle">CONFIGURED TRUSTED DOMAINS</span>
+        <button id="clearCurrentList" style="background: transparent; border: none; color: var(--accent-danger); cursor: pointer; font-size: 11px; font-weight: 700;">Clear List</button>
+      </div>
+      <div id="siteList" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="trusted.js"></script>
+</body>
+</html>

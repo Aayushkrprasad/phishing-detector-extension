@@ -1,16 +1,25 @@
-let params = new URLSearchParams(window.location.search);
-let blockedUrl = params.get("url");
+document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const blockedUrl = params.get("url");
 
-document.getElementById("siteInfo").innerText = blockedUrl
-  ? "Blocked Site: " + blockedUrl
-  : "Blocked Site not found";
-
-document.getElementById("backBtn").addEventListener("click", () => {
-  history.back();
-});
-
-document.getElementById("continueBtn").addEventListener("click", () => {
+  const siteInfo = document.getElementById("siteInfo");
   if (blockedUrl) {
-    window.location.href = blockedUrl;
+    siteInfo.textContent = blockedUrl;
+  } else {
+    siteInfo.textContent = "Unknown URL Target";
   }
-});
+
+  document.getElementById("backBtn").addEventListener("click", () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = "https://www.google.com";
+    }
+  });
+
+  document.getElementById("continueBtn").addEventListener("click", () => {
+    if (blockedUrl) {
+      window.location.href = blockedUrl;
+    }
+  });
+});

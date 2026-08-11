@@ -1,12 +1,259 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phishing Detector Pro</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <h2>Phishing Detector</h2>
-  <div id="result">Loading...</div>
-  <button id="viewHistory">View History</button>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-shield">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">Phishing Detector</div>
+          <div class="brand-subtitle">AI & HEURISTIC SHIELD</div>
+        </div>
+      </div>
+      <span class="pro-badge">PRO v3.5</span>
+    </header>
+
+    <!-- Mode Selector Tabs -->
+    <div class="popup-mode-bar">
+      <button id="tabLiveBtn" class="mode-tab active">
+        <span>🌐 Live Tab</span>
+      </button>
+      <button id="tabScannerBtn" class="mode-tab">
+        <span>🔍 URL Scanner</span>
+      </button>
+    </div>
+
+    <!-- VIEW 1: LIVE ACTIVE TAB INSPECTOR -->
+    <div id="liveTabSection" class="view-section active">
+      <!-- Host Card -->
+      <div class="host-banner">
+        <div class="host-info">
+          <span class="host-icon">🌐</span>
+          <span id="currentHost" class="host-name" title="Current Host">Inspecting tab...</span>
+        </div>
+        <span id="hostStatusTag" class="status-pill status-loading">Scanning</span>
+      </div>
+
+      <!-- Gauge Section -->
+      <div class="gauge-card">
+        <div class="gauge-wrapper">
+          <svg class="gauge-svg" viewBox="0 0 120 120">
+            <circle class="gauge-bg" cx="60" cy="60" r="50" />
+            <circle id="gaugeFill" class="gauge-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314" />
+          </svg>
+          <div class="gauge-center">
+            <span id="scoreValue" class="score-num">--</span>
+            <span class="score-txt">THREAT SCORE</span>
+          </div>
+        </div>
+
+        <div class="gauge-status-desc">
+          <div id="statusHeading" class="status-heading">Analyzing Page Signals</div>
+          <div id="statusSubtext" class="status-subtext">Evaluating URL entropy, typosquatting & DOM heuristics</div>
+        </div>
+      </div>
+
+      <!-- Live Telemetry / Metrics Bar -->
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <span class="metric-label">SSL PROTOCOL</span>
+          <span id="metricSsl" class="metric-val">--</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">ENTROPY (DGA)</span>
+          <span id="metricEntropy" class="metric-val">--</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">BRAND SPOOF</span>
+          <span id="metricBrand" class="metric-val">None</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">INPUT GUARD</span>
+          <span id="metricInputs" class="metric-val">0 Fields</span>
+        </div>
+      </div>
+
+      <!-- Security Findings Section -->
+      <div class="findings-container">
+        <div class="section-header">
+          <span class="section-title">DETECTION SIGNALS</span>
+          <span id="findingCount" class="finding-count">0 Flags</span>
+        </div>
+        <div id="reasonsList" class="reasons-list">
+          <div class="scan-loader">
+            <div class="spinner"></div>
+            <span>Analyzing DOM heuristics...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Defense Switches -->
+      <div class="switches-card">
+        <div class="switch-row">
+          <div class="switch-info">
+            <span class="switch-title">Hover Link Shield</span>
+            <span class="switch-desc">In-page safety badges on hovered links</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleLinkShield" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-row">
+          <div class="switch-info">
+            <span class="switch-title">Credential Guard</span>
+            <span class="switch-desc">Alerts before typing passwords on risky sites</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleCredentialGuard" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-row">
+          <div class="switch-info">
+            <span class="switch-title">Auto-Block Navigation</span>
+            <span class="switch-desc">Block critical danger URLs immediately</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleAutoBlock">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Quick Action Bar -->
+      <div class="actions-row">
+        <button id="trustSiteBtn" class="btn btn-outline-trust">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+          <span id="trustBtnText">Trust Site</span>
+        </button>
+
+        <button id="blacklistSiteBtn" class="btn btn-outline-danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+          <span>Blacklist</span>
+        </button>
+
+        <button id="deepScanBtn" class="btn btn-primary" title="Re-scan current tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          <span>Deep Scan</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 2: QUICK URL & TEXT SCANNER -->
+    <div id="scannerSection" class="view-section">
+      <div class="scanner-card">
+        <div class="scanner-title">Instant URL & Phishing Inspector</div>
+        <div class="scanner-desc">Inspect any suspicious link safely without visiting it in your browser:</div>
+        
+        <div class="quick-input-group">
+          <input type="text" id="quickUrlInput" class="quick-input" placeholder="Paste URL e.g. http://paypa1.com/login" value="http://paypa1-security.xyz/verify">
+          <button id="quickScanBtn" class="btn btn-primary">Scan Link</button>
+        </div>
+
+        <div class="sample-pills">
+          <span class="sample-label">Try:</span>
+          <button class="sample-btn" data-url="http://paypa1.com/login">paypa1</button>
+          <button class="sample-btn" data-url="https://g00gle-security.xyz/auth">g00gle.xyz</button>
+          <button class="sample-btn" data-url="http://chase-bank.update-auth.tk">chase.tk</button>
+          <button class="sample-btn" data-url="https://github.com">github.com</button>
+        </div>
+      </div>
+
+      <!-- Quick Scan Result Card -->
+      <div id="quickScanResult" class="scan-result-card">
+        <div class="quick-header-row">
+          <div>
+            <span class="quick-res-title">Threat Assessment:</span>
+            <div id="quickResHost" class="quick-res-host">paypa1-security.xyz</div>
+          </div>
+          <div class="quick-res-score-badge">
+            <span id="quickScoreVal" class="quick-score-num">85</span>
+            <span id="quickScoreLabel" class="quick-score-pill status-danger">HIGH RISK</span>
+          </div>
+        </div>
+
+        <div class="quick-metrics-row">
+          <div class="q-metric">
+            <span class="q-label">ENTROPY</span>
+            <span id="quickEntropy" class="q-val">3.4 H(X)</span>
+          </div>
+          <div class="q-metric">
+            <span class="q-label">TARGET BRAND</span>
+            <span id="quickBrand" class="q-val text-yellow">PayPal</span>
+          </div>
+          <div class="q-metric">
+            <span class="q-label">TLD RISK</span>
+            <span id="quickTld" class="q-val text-danger">.xyz (High)</span>
+          </div>
+        </div>
+
+        <div class="quick-threats-box">
+          <span class="q-findings-title">Triggered Heuristics:</span>
+          <div id="quickThreatsList" class="reasons-list"></div>
+        </div>
+
+        <button id="copyReportBtn" class="btn btn-secondary btn-block">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span id="copyBtnText">Copy Forensic Report</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer Navigation (3 Columns) -->
+    <footer class="footer-nav">
+      <button id="viewHistory" class="nav-tab" title="Forensic logs & CSV export">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        <span>Analytics</span>
+      </button>
+
+      <button id="trustedSitesBtn" class="nav-tab" title="Whitelist and Blacklist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span>Rules</span>
+      </button>
+
+      <button id="openSandboxBtn" class="nav-tab nav-tab-highlight" title="Interactive Phishing Lab & Simulator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span>Lab</span>
+      </button>
+    </footer>
+  </div>
+
+  <script src="heuristics.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
