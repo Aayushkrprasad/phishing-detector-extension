@@ -269,6 +269,20 @@
         <!-- Injected by JS -->
       </div>
     </div>
+
+    <!-- Online Threat Intelligence API Settings Card -->
+    <div class="add-card" style="margin-top: 8px;">
+      <div style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+        <span>🌐 Online Threat Intelligence (VirusTotal Integration)</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+        Optional: Enter your VirusTotal v3 API Key for real-time online cloud domain threat intelligence lookups.
+      </div>
+      <form id="apiKeyForm" class="form-row" style="margin-top: 10px;">
+        <input type="password" id="vtApiKeyInput" class="domain-input" placeholder="Paste VirusTotal API Key e.g. a8f9x1z..." autocomplete="off">
+        <button type="submit" id="saveApiKeyBtn" class="btn btn-add-safe">Save Key</button>
+      </form>
+    </div>
   </div>
 
   <script src="trusted.js"></script>

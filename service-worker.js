@@ -13,16 +13,20 @@ try {
 chrome.runtime.onInstalled.addListener(() => {
   console.log("Phishing Detector Pro v3.0 Installed & Ready");
 
-  chrome.storage.local.get(["userSettings", "trustedSites", "customBlacklist", "scanHistory"], (data) => {
+  chrome.storage.local.get(["userSettings", "trustedSites", "customBlacklist", "scanHistory", "userMode"], (data) => {
     if (!data.userSettings) {
       chrome.storage.local.set({
         userSettings: {
+          realTimeShieldEnabled: true,
           linkShieldEnabled: true,
           credentialGuardEnabled: true,
           autoBlockEnabled: false,
           threatIntelEnabled: true
         }
       });
+    }
+    if (!data.userMode) {
+      chrome.storage.local.set({ userMode: "simple" });
     }
     if (!data.trustedSites) {
       chrome.storage.local.set({ trustedSites: ["google.com", "github.com", "wikipedia.org"] });
@@ -50,9 +54,17 @@ function evaluateTabSecurity(tabId, url) {
     const parsedUrl = new URL(url);
     const host = parsedUrl.hostname.toLowerCase();
 
-    chrome.storage.local.get(["trustedSites", "customBlacklist", "scanHistory"], (storage) => {
+    chrome.storage.local.get(["userSettings", "trustedSites", "customBlacklist", "scanHistory"], (storage) => {
+      const settings = storage.userSettings || {};
       const trusted = storage.trustedSites || [];
       const blacklist = storage.customBlacklist || [];
+
+      // Check if protection is explicitly paused
+      if (settings.realTimeShieldEnabled === false) {
+        chrome.action.setBadgeText({ tabId, text: "OFF" });
+        chrome.action.setBadgeBackgroundColor({ tabId, color: "#64748B" });
+        return;
+      }
 
       // Check Blacklist first
       if (blacklist.includes(host)) {
@@ -150,6 +162,7 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
       const trusted = storage.trustedSites || [];
       const blacklist = storage.customBlacklist || [];
 
+      if (settings.realTimeShieldEnabled === false) return;
       if (trusted.includes(host)) return;
 
       const isBlacklisted = blacklist.includes(host);

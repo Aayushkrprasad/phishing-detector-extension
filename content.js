@@ -15,10 +15,12 @@
   window.__pdpInitialized = true;
 
   let userSettings = {
+    realTimeShieldEnabled: true,
     linkShieldEnabled: true,
     credentialGuardEnabled: true,
     autoBlockEnabled: false,
-    clipGuardEnabled: true
+    clipGuardEnabled: true,
+    audioAlertsEnabled: true
   };
 
   // Load preferences from storage
@@ -58,7 +60,7 @@
   }
 
   function handleLinkMouseOver(e) {
-    if (!userSettings.linkShieldEnabled) return;
+    if (userSettings.realTimeShieldEnabled === false || !userSettings.linkShieldEnabled) return;
 
     const link = e.target.closest("a[href]");
     if (!link || !link.href) return;
@@ -167,7 +169,7 @@
   // -------------------------------------------------------------
   function initCredentialGuard() {
     document.addEventListener("focusin", (e) => {
-      if (!userSettings.credentialGuardEnabled) return;
+      if (userSettings.realTimeShieldEnabled === false || !userSettings.credentialGuardEnabled) return;
       const target = e.target;
       if (!target || target.nodeName !== "INPUT") return;
 
@@ -242,6 +244,7 @@
       } else {
         inputEl.parentElement.insertBefore(banner, inputEl);
       }
+      playSecurityAudioAlert("warn");
     }
   }
 
@@ -257,6 +260,7 @@
   }
 
   function checkForFakeOAuthModals() {
+    if (userSettings.realTimeShieldEnabled === false) return;
     const currentHost = window.location.hostname.toLowerCase();
     if ((window.__pdpTrustedSites || []).includes(currentHost)) return;
 
@@ -293,6 +297,7 @@
 
     // Watch for malicious script modification to clipboard
     document.addEventListener("copy", (e) => {
+      if (userSettings.realTimeShieldEnabled === false) return;
       setTimeout(async () => {
         try {
           if (!navigator.clipboard || !navigator.clipboard.readText) return;
@@ -313,6 +318,7 @@
   }
 
   function showToastAlert(title, message) {
+    playSecurityAudioAlert("danger");
     const existing = document.getElementById("pdp-toast-alert");
     if (existing) existing.remove();
 
@@ -334,6 +340,46 @@
     setTimeout(() => {
       if (toast.parentElement) toast.remove();
     }, 8000);
+  }
+
+  // -------------------------------------------------------------
+  // Web Audio API Synthesizer Alert Sounds
+  // -------------------------------------------------------------
+  function playSecurityAudioAlert(type) {
+    if (userSettings.audioAlertsEnabled === false) return;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === "danger") {
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.3);
+      } else if (type === "warn") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.2);
+      } else {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(1046, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.15);
+      }
+    } catch (e) {}
   }
 
   // -------------------------------------------------------------

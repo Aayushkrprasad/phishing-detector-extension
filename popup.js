@@ -8,7 +8,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   let currentHostname = "";
   let currentTabId = null;
 
-  // Initialize UI, Tabs, and Settings
+  let isRealTimeShieldEnabled = true;
+  let currentUserMode = "simple";
+
+  // Initialize UI Mode, Tabs, Scanner and Settings
+  initUserMode();
   initPopupModeTabs();
   initQuickScanner();
   await initSettingsToggles();
@@ -37,7 +41,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       currentHostname = new URL(currentTabUrl).hostname;
-      document.getElementById("currentHost").textContent = currentHostname;
+      const hostEl = document.getElementById("currentHost");
+      const simpleHostEl = document.getElementById("simpleCurrentHost");
+      if (hostEl) hostEl.textContent = currentHostname;
+      if (simpleHostEl) simpleHostEl.textContent = currentHostname;
 
       // Check site status in storage (Trusted vs Blacklisted)
       chrome.storage.local.get(["trustedSites", "customBlacklist"], (res) => {
@@ -76,6 +83,45 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Setup Event Listeners
   setupEventListeners();
+
+  /**
+   * User Mode Handler (Simple vs Advanced)
+   */
+  function initUserMode() {
+    const appContainer = document.querySelector(".app-container");
+    const modeBtn = document.getElementById("toggleUserModeBtn");
+    const modeLabel = document.getElementById("userModeLabel");
+    const openAdvBtn = document.getElementById("openAdvancedViewBtn");
+
+    chrome.storage.local.get(["userMode"], (res) => {
+      currentUserMode = res.userMode || "simple";
+      applyUserMode(currentUserMode);
+    });
+
+    function applyUserMode(mode) {
+      currentUserMode = mode;
+      if (appContainer) {
+        appContainer.className = "app-container " + (mode === "advanced" ? "advanced-mode" : "simple-mode");
+      }
+      if (modeLabel) {
+        modeLabel.textContent = mode === "advanced" ? "Advanced Mode" : "Simple Mode";
+      }
+      chrome.storage.local.set({ userMode: mode });
+    }
+
+    if (modeBtn) {
+      modeBtn.addEventListener("click", () => {
+        const nextMode = currentUserMode === "simple" ? "advanced" : "simple";
+        applyUserMode(nextMode);
+      });
+    }
+
+    if (openAdvBtn) {
+      openAdvBtn.addEventListener("click", () => {
+        applyUserMode("advanced");
+      });
+    }
+  }
 
   /**
    * Tab Switching between Live Tab & Quick Scanner
@@ -175,15 +221,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         listEl.innerHTML = `<div class="reason-item" style="color: var(--accent-safe);"><span>🛡️</span><span>No malicious heuristics or typosquatting flags found.</span></div>`;
       }
 
-      // Save report data for copying
+      // Save report data for copying & PDF export
       window.__lastQuickScanReport = {
         url: raw,
-        hostname: evalData.hostname,
+        hostname: evalData.hostname || raw,
         risk: evalData.risk,
         level: evalData.level,
         threats: evalData.threats?.map(t => t.text).join(", ") || "None",
+        threatItems: evalData.threats || [],
         scannedAt: new Date().toISOString()
       };
+    }
+
+    const exportPdfBtn = document.getElementById("exportPdfReportBtn");
+    if (exportPdfBtn) {
+      exportPdfBtn.addEventListener("click", () => {
+        if (window.__lastQuickScanReport) {
+          generatePdfAuditReport(window.__lastQuickScanReport);
+        }
+      });
     }
 
     if (copyReportBtn) {
@@ -291,6 +347,66 @@ document.addEventListener("DOMContentLoaded", async () => {
         reasonsList.appendChild(item);
       });
     }
+
+    // Update Simple Mode Card UI
+    const simpleTag = document.getElementById("simpleHostStatusTag");
+    const simpleShield = document.getElementById("simpleShieldWrapper");
+    const simpleTitle = document.getElementById("simpleStatusTitle");
+    const simpleDesc = document.getElementById("simpleStatusDesc");
+    const simpleIcon = document.getElementById("simpleShieldIcon");
+
+    if (simpleTag) simpleTag.className = tag.className;
+    if (simpleTag) simpleTag.textContent = tag.textContent;
+
+    if (simpleShield && simpleTitle && simpleDesc && simpleIcon) {
+      simpleShield.className = "simple-shield-wrapper";
+
+      if (!isRealTimeShieldEnabled) {
+        simpleShield.classList.add("paused");
+        simpleTitle.textContent = "Protection Shield Paused";
+        simpleTitle.style.color = "var(--text-muted)";
+        simpleDesc.textContent = "Real-time protection is turned off. Toggle Real-time Shield to resume monitoring.";
+        simpleIcon.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="simple-shield-svg">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <line x1="4" y1="4" x2="20" y2="20"/>
+          </svg>
+        `;
+      } else if (risk >= 60) {
+        simpleShield.classList.add("danger");
+        simpleTitle.textContent = "High Phishing Threat";
+        simpleTitle.style.color = "var(--accent-danger)";
+        simpleDesc.textContent = threats[0]?.text || "Critical brand spoofing or credential harvesting flags detected.";
+        simpleIcon.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="simple-shield-svg">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        `;
+      } else if (risk >= 25) {
+        simpleShield.classList.add("warn");
+        simpleTitle.textContent = "Caution: Suspect Page";
+        simpleTitle.style.color = "var(--accent-warn)";
+        simpleDesc.textContent = threats[0]?.text || "Page exhibits heuristic anomalies. Exercise caution entering information.";
+        simpleIcon.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="simple-shield-svg">
+            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        `;
+      } else {
+        simpleShield.classList.add("safe");
+        simpleTitle.textContent = "Your Connection is Secure";
+        simpleTitle.style.color = "var(--accent-safe)";
+        simpleDesc.textContent = "Phishing Detector scanned this page and found no security risks.";
+        simpleIcon.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="simple-shield-svg">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        `;
+      }
+    }
   }
 
   function showSpecialPageState(title, description, risk) {
@@ -299,6 +415,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tag = document.getElementById("hostStatusTag");
     tag.className = "status-pill status-safe";
     tag.textContent = "INTERNAL";
+
+    const simpleHost = document.getElementById("simpleCurrentHost");
+    const simpleTag = document.getElementById("simpleHostStatusTag");
+    if (simpleHost) simpleHost.textContent = title;
+    if (simpleTag) {
+      simpleTag.className = "status-pill status-safe";
+      simpleTag.textContent = "INTERNAL";
+    }
+
+    const simpleShield = document.getElementById("simpleShieldWrapper");
+    const simpleTitle = document.getElementById("simpleStatusTitle");
+    const simpleDesc = document.getElementById("simpleStatusDesc");
+    const simpleIcon = document.getElementById("simpleShieldIcon");
+    if (simpleShield && simpleTitle && simpleDesc && simpleIcon) {
+      simpleShield.className = "simple-shield-wrapper safe";
+      simpleTitle.textContent = title;
+      simpleTitle.style.color = "var(--accent-safe)";
+      simpleDesc.textContent = description;
+      simpleIcon.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="simple-shield-svg">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      `;
+    }
 
     document.getElementById("statusHeading").textContent = title;
     document.getElementById("statusSubtext").textContent = description;
@@ -403,30 +544,60 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /**
-   * Settings Toggles Sync
+   * Settings Toggles & Theme Sync
    */
   async function initSettingsToggles() {
+    const masterShield = document.getElementById("toggleMasterProtection");
     const linkShield = document.getElementById("toggleLinkShield");
     const credGuard = document.getElementById("toggleCredentialGuard");
     const autoBlock = document.getElementById("toggleAutoBlock");
+    const audioAlerts = document.getElementById("toggleAudioAlerts");
+    const themeSelect = document.getElementById("themeSelect");
 
-    chrome.storage.local.get(["userSettings"], (res) => {
+    chrome.storage.local.get(["userSettings", "theme"], (res) => {
       const settings = res.userSettings || {
+        realTimeShieldEnabled: true,
         linkShieldEnabled: true,
         credentialGuardEnabled: true,
-        autoBlockEnabled: false
+        autoBlockEnabled: false,
+        audioAlertsEnabled: true
       };
 
-      linkShield.checked = settings.linkShieldEnabled !== false;
-      credGuard.checked = settings.credentialGuardEnabled !== false;
-      autoBlock.checked = settings.autoBlockEnabled === true;
+      const theme = res.theme || "cyber";
+      if (themeSelect) themeSelect.value = theme;
+      applyTheme(theme);
+
+      isRealTimeShieldEnabled = settings.realTimeShieldEnabled !== false;
+      if (masterShield) masterShield.checked = isRealTimeShieldEnabled;
+      if (linkShield) linkShield.checked = settings.linkShieldEnabled !== false;
+      if (credGuard) credGuard.checked = settings.credentialGuardEnabled !== false;
+      if (autoBlock) autoBlock.checked = settings.autoBlockEnabled === true;
+      if (audioAlerts) audioAlerts.checked = settings.audioAlertsEnabled !== false;
     });
 
+    function applyTheme(theme) {
+      if (theme === "emerald" || theme === "cyberpunk") {
+        document.documentElement.setAttribute("data-theme", theme);
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+      }
+      chrome.storage.local.set({ theme });
+    }
+
+    if (themeSelect) {
+      themeSelect.addEventListener("change", (e) => {
+        applyTheme(e.target.value);
+      });
+    }
+
     function saveSettings() {
+      if (masterShield) isRealTimeShieldEnabled = masterShield.checked;
       const updated = {
-        linkShieldEnabled: linkShield.checked,
-        credentialGuardEnabled: credGuard.checked,
-        autoBlockEnabled: autoBlock.checked
+        realTimeShieldEnabled: isRealTimeShieldEnabled,
+        linkShieldEnabled: linkShield ? linkShield.checked : true,
+        credentialGuardEnabled: credGuard ? credGuard.checked : true,
+        autoBlockEnabled: autoBlock ? autoBlock.checked : false,
+        audioAlertsEnabled: audioAlerts ? audioAlerts.checked : true
       };
 
       chrome.storage.local.set({ userSettings: updated });
@@ -437,10 +608,83 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (chrome.runtime.lastError) { /* quiet ignore */ }
         });
       }
+
+      // Re-scan tab to update popup status view immediately
+      if (currentTabId && currentTabUrl) {
+        runScanOnTab(currentTabId, currentTabUrl);
+      }
     }
 
-    linkShield.addEventListener("change", saveSettings);
-    credGuard.addEventListener("change", saveSettings);
-    autoBlock.addEventListener("change", saveSettings);
+    if (masterShield) masterShield.addEventListener("change", saveSettings);
+    if (linkShield) linkShield.addEventListener("change", saveSettings);
+    if (credGuard) credGuard.addEventListener("change", saveSettings);
+    if (autoBlock) autoBlock.addEventListener("change", saveSettings);
+    if (audioAlerts) audioAlerts.addEventListener("change", saveSettings);
+  }
+
+  /**
+   * PDF Audit Report Generator
+   */
+  function generatePdfAuditReport(report) {
+    const printWin = window.open("", "_blank", "width=800,height=900");
+    if (!printWin) return;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Phishing Detector Pro - Forensic Security Audit Report</title>
+        <style>
+          body { font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #0F172A; background: #FFF; }
+          .header { display: flex; justify-content: space-between; border-bottom: 2px solid #3B82F6; padding-bottom: 12px; margin-bottom: 24px; }
+          .title { font-size: 20px; font-weight: 800; color: #1E3A8A; }
+          .sub { font-size: 12px; color: #64748B; margin-top: 4px; }
+          .badge { padding: 4px 12px; border-radius: 6px; font-weight: 800; font-size: 14px; display: inline-block; }
+          .danger { background: #FEE2E2; color: #991B1B; border: 1px solid #F87171; }
+          .warn { background: #FEF3C7; color: #92400E; border: 1px solid #FBBF24; }
+          .safe { background: #D1FAE5; color: #065F46; border: 1px solid #34D399; }
+          .box { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+          .item { display: flex; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+          .footer { margin-top: 40px; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; padding-top: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="title">🛡️ PHISHING DETECTOR PRO</div>
+            <div class="sub">Forensic Security Audit Report</div>
+          </div>
+          <div>
+            <span class="badge ${report.risk >= 60 ? 'danger' : report.risk >= 25 ? 'warn' : 'safe'}">
+              SCORE: ${report.risk}/100 (${report.level})
+            </span>
+          </div>
+        </div>
+
+        <div class="box">
+          <p><strong>Target URL:</strong> ${report.url}</p>
+          <p><strong>Hostname:</strong> ${report.hostname}</p>
+          <p><strong>Timestamp:</strong> ${report.scannedAt}</p>
+        </div>
+
+        <h3>Detection Flags & Heuristic Findings</h3>
+        <div class="box">
+          ${report.threatItems && report.threatItems.length > 0
+            ? report.threatItems.map(t => `<div class="item"><span>${t.icon || '⚠️'}</span><span><strong>${t.type || 'FLAG'}:</strong> ${t.text}</span></div>`).join('')
+            : '<div class="item"><span>🛡️</span><span>No malicious heuristics or typosquatting flags found.</span></div>'
+          }
+        </div>
+
+        <div class="footer">
+          Generated automatically by Phishing Detector Pro Chrome Extension • Standard STIX 2.1 IOC Compliant
+        </div>
+        <script>
+          window.onload = function() { window.print(); };
+        </script>
+      </body>
+      </html>
+    `;
+    printWin.document.write(html);
+    printWin.document.close();
   }
 });

@@ -9,9 +9,12 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
 
   function loadLists() {
-    chrome.storage.local.get(["trustedSites", "customBlacklist"], (res) => {
+    chrome.storage.local.get(["trustedSites", "customBlacklist", "vtApiKey"], (res) => {
       const trusted = res.trustedSites || [];
       const blacklist = res.customBlacklist || [];
+      if (res.vtApiKey && document.getElementById("vtApiKeyInput")) {
+        document.getElementById("vtApiKeyInput").value = res.vtApiKey;
+      }
 
       document.getElementById("whitelistCount").textContent = `(${trusted.length})`;
       document.getElementById("blacklistCount").textContent = `(${blacklist.length})`;
@@ -133,6 +136,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     });
+
+    // Save VirusTotal API Key
+    const apiKeyForm = document.getElementById("apiKeyForm");
+    if (apiKeyForm) {
+      apiKeyForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const key = document.getElementById("vtApiKeyInput").value.trim();
+        chrome.storage.local.set({ vtApiKey: key }, () => {
+          alert(key ? "VirusTotal API Key saved successfully." : "VirusTotal API Key cleared.");
+        });
+      });
+    }
   }
 
   function escapeHtml(str) {

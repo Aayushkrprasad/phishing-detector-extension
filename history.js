@@ -209,6 +209,87 @@ document.addEventListener("DOMContentLoaded", () => {
       downloadAnchor.remove();
     });
 
+    // Export to PDF Audit Report
+    const exportPdfBtn = document.getElementById("exportPdfBtn");
+    if (exportPdfBtn) {
+      exportPdfBtn.addEventListener("click", () => {
+        if (allScans.length === 0) {
+          alert("No scan data to export.");
+          return;
+        }
+
+        const printWin = window.open("", "_blank", "width=900,height=1000");
+        if (!printWin) return;
+
+        const html = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Phishing Detector Pro - Executive Audit Report</title>
+            <style>
+              body { font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #0F172A; }
+              .header { display: flex; justify-content: space-between; border-bottom: 2px solid #3B82F6; padding-bottom: 12px; margin-bottom: 20px; }
+              .title { font-size: 22px; font-weight: 800; color: #1E3A8A; }
+              .kpi-row { display: flex; gap: 20px; margin-bottom: 20px; }
+              .kpi { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px 18px; border-radius: 8px; flex: 1; }
+              .kpi-val { font-size: 20px; font-weight: 800; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { border: 1px solid #E2E8F0; padding: 8px 12px; font-size: 12px; text-align: left; }
+              th { background: #F1F5F9; font-weight: 700; }
+              .danger { color: #DC2626; font-weight: 700; }
+              .warn { color: #D97706; font-weight: 700; }
+              .safe { color: #16A34A; font-weight: 700; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div>
+                <div class="title">🛡️ PHISHING DETECTOR PRO</div>
+                <div>Executive Cyber Threat & Audit Log Report</div>
+              </div>
+              <div style="font-size: 12px; color: #64748B;">Generated: ${new Date().toLocaleString()}</div>
+            </div>
+
+            <div class="kpi-row">
+              <div class="kpi"><div>Total Scanned</div><div class="kpi-val">${allScans.length}</div></div>
+              <div class="kpi"><div>Phishing Blocked</div><div class="kpi-val danger">${allScans.filter(s => s.risk >= 60).length}</div></div>
+              <div class="kpi"><div>Suspicious Flags</div><div class="kpi-val warn">${allScans.filter(s => s.risk >= 25 && s.risk < 60).length}</div></div>
+            </div>
+
+            <h3>Scan Telemetry Log</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Hostname</th>
+                  <th>Risk Score</th>
+                  <th>Classification</th>
+                  <th>Primary Detection Signal</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${allScans.map(s => `
+                  <tr>
+                    <td>${s.timestamp ? new Date(s.timestamp).toLocaleString() : 'N/A'}</td>
+                    <td><strong>${s.hostname || ''}</strong></td>
+                    <td>${s.risk}/100</td>
+                    <td class="${s.risk >= 60 ? 'danger' : s.risk >= 25 ? 'warn' : 'safe'}">${s.level || 'SAFE'}</td>
+                    <td>${s.threats && s.threats[0] ? s.threats[0].text : 'Passed Heuristics'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <script>
+              window.onload = function() { window.print(); };
+            </script>
+          </body>
+          </html>
+        `;
+        printWin.document.write(html);
+        printWin.document.close();
+      });
+    }
+
     // Clear Logs
     document.getElementById("clearHistoryBtn").addEventListener("click", () => {
       if (confirm("Are you sure you want to clear all forensic scan history logs?")) {

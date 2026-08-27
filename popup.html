@@ -23,8 +23,67 @@
           <div class="brand-subtitle">AI & HEURISTIC SHIELD</div>
         </div>
       </div>
-      <span class="pro-badge">PRO v3.5</span>
+      <div class="header-right">
+        <select id="themeSelect" class="theme-select" title="Switch visual theme">
+          <option value="cyber">🌌 Dark</option>
+          <option value="emerald">🟢 Emerald</option>
+          <option value="cyberpunk">⚡ Neon</option>
+        </select>
+        <button id="toggleUserModeBtn" class="mode-toggle-pill" title="Click to switch between Simple and Advanced modes">
+          <span id="userModeLabel">Simple Mode</span>
+        </button>
+      </div>
     </header>
+
+    <!-- SIMPLE USER MODE VIEW -->
+    <div id="simpleView" class="simple-view">
+      <!-- Host Card -->
+      <div class="host-banner">
+        <div class="host-info">
+          <span class="host-icon">🌐</span>
+          <span id="simpleCurrentHost" class="host-name" title="Current Host">Inspecting tab...</span>
+        </div>
+        <span id="simpleHostStatusTag" class="status-pill status-loading">Scanning</span>
+      </div>
+
+      <!-- Simple Status Card -->
+      <div class="simple-status-card">
+        <div id="simpleShieldWrapper" class="simple-shield-wrapper safe">
+          <div id="simpleShieldIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="simple-shield-svg">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+        </div>
+        <div id="simpleStatusTitle" class="simple-status-title">Your Connection is Secure</div>
+        <div id="simpleStatusDesc" class="simple-status-desc">Phishing Detector scanned this page and found no security risks.</div>
+      </div>
+
+      <!-- Simple Master Protection Card -->
+      <div class="simple-protection-card">
+        <div class="simple-toggle-row">
+          <div class="simple-toggle-info">
+            <span class="simple-toggle-icon">🛡️</span>
+            <div class="simple-toggle-texts">
+              <span class="simple-toggle-title">Real-time Shield</span>
+              <span class="simple-toggle-desc">Protects links, logins & forms</span>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleMasterProtection" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Quick Link to Advanced Mode -->
+      <div class="simple-link-row">
+        <button id="openAdvancedViewBtn" class="simple-link-btn">
+          <span>⚡ View Advanced Forensic Tools</span>
+        </button>
+      </div>
+    </div>
 
     <!-- Mode Selector Tabs -->
     <div class="popup-mode-bar">
@@ -134,6 +193,17 @@
             <span class="toggle-slider"></span>
           </label>
         </div>
+
+        <div class="switch-row">
+          <div class="switch-info">
+            <span class="switch-title">Audio Synthesizer Alerts</span>
+            <span class="switch-desc">Play cyber sound chime when threat detected</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleAudioAlerts" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
       </div>
 
       <!-- Quick Action Bar -->
@@ -216,13 +286,24 @@
           <div id="quickThreatsList" class="reasons-list"></div>
         </div>
 
-        <button id="copyReportBtn" class="btn btn-secondary btn-block">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-          <span id="copyBtnText">Copy Forensic Report</span>
-        </button>
+        <div class="actions-row">
+          <button id="copyReportBtn" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span id="copyBtnText">Copy Log</span>
+          </button>
+          <button id="exportPdfReportBtn" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span>Export PDF</span>
+          </button>
+        </div>
       </div>
     </div>
 

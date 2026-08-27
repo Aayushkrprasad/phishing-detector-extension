@@ -6,6 +6,10 @@ An enterprise-grade, real-time AI & Heuristic Chrome Extension for phishing, typ
 
 ## 🚀 Advanced Capabilities & Architecture
 
+### 0. 🌟 Ultra-Simple User Experience (Simple vs. Advanced Mode)
+- **Simple Mode (Default)**: Designed for non-technical users with a clear, jargon-free **Pulsing Security Shield** (🟢 Secure / 🟡 Caution / 🔴 Danger), simple plain-English summaries, and a single **Master Real-time Shield** toggle.
+- **Advanced Mode**: 1-click toggle to unlock deep threat telemetry, Shannon Entropy meters, Levenshtein edit distance calculations, forensic logs, and interactive labs.
+
 ### 1. 🛡️ In-Page Active Defense (Zero-Trust Browsing)
 - **Hover Link Shield**: Real-time mouse hover listener with floating security badge (🟢 Verified / 🟡 Caution / 🔴 Phishing Risk) showing destination threat score before clicking.
 - **In-Page Credential Guard**: Prevents credential harvesting by alerting before passwords or credit card numbers are typed on unencrypted HTTP or high-risk domains.

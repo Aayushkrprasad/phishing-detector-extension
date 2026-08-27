@@ -26,7 +26,21 @@ const ThreatEngine = (() => {
     { name: "Wells Fargo", domain: "wellsfargo.com", keywords: ["wellsfargo", "wells-fargo", "wf-online"] },
     { name: "Steam", domain: "steampowered.com", keywords: ["steam", "steampowered", "steamcommunity", "steam-trade"] },
     { name: "Telegram", domain: "telegram.org", keywords: ["telegram", "telegrm", "t-me", "telegram-web"] },
-    { name: "WhatsApp", domain: "whatsapp.com", keywords: ["whatsapp", "whatsap", "wa-web"] }
+    { name: "WhatsApp", domain: "whatsapp.com", keywords: ["whatsapp", "whatsap", "wa-web"] },
+    { name: "Paytm", domain: "paytm.com", keywords: ["paytm", "paytm-pay", "paytm-wallet", "paytm-kyc", "paytm-bank"] },
+    { name: "PhonePe", domain: "phonepe.com", keywords: ["phonepe", "phone-pe", "phonepe-pay", "phonepe-reward"] },
+    { name: "Google Pay (GPay)", domain: "pay.google.com", keywords: ["gpay", "googlepay", "g-pay", "google-pay"] },
+    { name: "HDFC Bank", domain: "hdfcbank.com", keywords: ["hdfcbank", "hdfc-bank", "hdfc-netbanking", "hdfc-online"] },
+    { name: "SBI Bank", domain: "onlinesbi.sbi", keywords: ["onlinesbi", "sbi-online", "sbi-card", "sbi-netbanking"] },
+    { name: "ICICI Bank", domain: "icicibank.com", keywords: ["icicibank", "icici-bank", "icici-netbanking", "icici-online"] },
+    { name: "Axis Bank", domain: "axisbank.com", keywords: ["axisbank", "axis-bank", "axis-netbanking"] },
+    { name: "Zerodha", domain: "zerodha.com", keywords: ["zerodha", "kite-zerodha", "zerodha-kite", "zerodha-auth"] },
+    { name: "Groww", domain: "groww.in", keywords: ["groww", "groww-app", "groww-in"] },
+    { name: "Upstox", domain: "upstox.com", keywords: ["upstox", "upstox-pro", "upstox-login"] },
+    { name: "Swiggy", domain: "swiggy.com", keywords: ["swiggy", "swiggy-pay", "swiggy-order"] },
+    { name: "Zomato", domain: "zomato.com", keywords: ["zomato", "zomato-pay", "zomato-gold"] },
+    { name: "Razorpay", domain: "razorpay.com", keywords: ["razorpay", "razor-pay", "razorpay-checkout"] },
+    { name: "Cred", domain: "cred.club", keywords: ["cred", "cred-club", "cred-pay"] }
   ];
 
   // Top Global Canonical Domains for Dynamic Typosquatting
@@ -40,7 +54,9 @@ const ThreatEngine = (() => {
     "twitch.tv", "quora.com", "medium.com", "vimeo.com", "walmart.com",
     "cnn.com", "nytimes.com", "bbc.co.uk", "espn.com", "chase.com",
     "bankofamerica.com", "wellsfargo.com", "binance.com", "coinbase.com", "metamask.io",
-    "steampowered.com", "roblox.com", "discord.com", "telegram.org", "aliexpress.com"
+    "steampowered.com", "roblox.com", "discord.com", "telegram.org", "aliexpress.com",
+    "paytm.com", "phonepe.com", "hdfcbank.com", "onlinesbi.sbi", "icicibank.com", "axisbank.com",
+    "zerodha.com", "groww.in", "upstox.com", "swiggy.com", "zomato.com", "razorpay.com", "cred.club"
   ];
 
   // High-Risk TLDs frequently abused by phishing campaigns
@@ -310,6 +326,35 @@ const ThreatEngine = (() => {
     };
   }
 
+  /**
+   * VirusTotal Online Threat Intelligence API Helper
+   */
+  async function queryVirusTotalThreat(rawUrl, apiKey) {
+    if (!rawUrl || !apiKey) return { success: false, reason: "Missing URL or API Key" };
+    try {
+      const urlId = btoa(rawUrl).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+      const resp = await fetch(`https://www.virustotal.com/api/v3/urls/${urlId}`, {
+        method: "GET",
+        headers: { "x-apikey": apiKey }
+      });
+      if (!resp.ok) return { success: false, status: resp.status, reason: "VirusTotal API call failed or key invalid" };
+      const data = await resp.json();
+      const stats = data.data?.attributes?.last_analysis_stats || {};
+      const malicious = stats.malicious || 0;
+      const suspicious = stats.suspicious || 0;
+      return {
+        success: true,
+        malicious,
+        suspicious,
+        harmless: stats.harmless || 0,
+        total: (stats.malicious || 0) + (stats.suspicious || 0) + (stats.harmless || 0) + (stats.undetected || 0),
+        threatLevel: malicious > 2 ? "HIGH_RISK" : malicious > 0 || suspicious > 1 ? "SUSPICIOUS" : "SAFE"
+      };
+    } catch (e) {
+      return { success: false, reason: e.message };
+    }
+  }
+
   return {
     PROTECTED_BRANDS,
     CANONICAL_DOMAINS,
@@ -318,7 +363,8 @@ const ThreatEngine = (() => {
     calculateShannonEntropy,
     normalizeHomoglyphs,
     getBaseDomain,
-    evaluateUrlThreat
+    evaluateUrlThreat,
+    queryVirusTotalThreat
   };
 })();
 

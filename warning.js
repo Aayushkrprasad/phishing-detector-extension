@@ -19,7 +19,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("continueBtn").addEventListener("click", () => {
     if (blockedUrl) {
-      window.location.href = blockedUrl;
+      try {
+        const host = new URL(blockedUrl).hostname.toLowerCase();
+        chrome.storage.local.get(["trustedSites"], (res) => {
+          const trusted = res.trustedSites || [];
+          if (!trusted.includes(host)) {
+            trusted.push(host);
+            chrome.storage.local.set({ trustedSites: trusted }, () => {
+              window.location.href = blockedUrl;
+            });
+          } else {
+            window.location.href = blockedUrl;
+          }
+        });
+      } catch (e) {
+        window.location.href = blockedUrl;
+      }
     }
   });
 });
