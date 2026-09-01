@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Phishing Detector Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0B0F19;
+            --card-bg: rgba(18, 24, 40, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 48px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            margin-bottom: 36px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 24px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            background: rgba(6, 182, 212, 0.12);
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            border: 1px solid rgba(6, 182, 212, 0.25);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .effective-date {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 1rem;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 24px;
+        }
+
+        li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 14px;
+            color: var(--text-secondary);
+            font-size: 0.98rem;
+        }
+
+        li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--accent-cyan);
+            font-weight: 800;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--accent-cyan);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .highlight-box {
+            background: rgba(6, 182, 212, 0.06);
+            border-left: 4px solid var(--accent-cyan);
+            border-radius: 0 12px 12px 0;
+            padding: 18px 24px;
+            margin: 24px 0;
+        }
+
+        .highlight-box p {
+            margin-bottom: 0;
+            color: #e2e8f0;
+        }
+
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: #38bdf8;
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--card-border);
+            text-align: center;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">🛡️ Security & Privacy First</div>
+            <h1>Privacy Policy</h1>
+            <p class="effective-date"><strong>Product:</strong> Phishing Detector Pro | <strong>Effective Date:</strong> August 27, 2026</p>
+        </div>
+
+        <div class="highlight-box">
+            <p><strong>Zero Data Exfiltration:</strong> Phishing Detector Pro operates entirely on your local device. We do not collect, transmit, store, or sell any personal data or browsing activity.</p>
+        </div>
+
+        <h2>1. Data Collection & Processing</h2>
+        <ul>
+            <li><strong>100% Local Threat Analysis:</strong> All heuristic computations, domain entropy calculations, brand impersonation detection, and link safety evaluations occur locally inside your browser sandbox.</li>
+            <li><strong>No Personal Identifiable Information (PII):</strong> The extension never collects or logs your name, email, credentials, IP address, or browsing history.</li>
+            <li><strong>No Remote Telemetry or Tracking:</strong> There are no third-party tracking scripts, external analytics, or remote telemetry servers connected to this extension.</li>
+        </ul>
+
+        <h2>2. Browser Permissions Explained</h2>
+        <p>To provide real-time protection against malicious websites, Phishing Detector Pro requests standard browser permissions used strictly for local security processing:</p>
+        <ul>
+            <li><code>tabs</code> &amp; <code>activeTab</code>: Used exclusively to inspect the domain of the active tab and display real-time safety scores on the extension badge.</li>
+            <li><code>scripting</code>: Used to render real-time security badges on links hovered on web pages and display phishing warning overlays when dangerous pages are detected.</li>
+            <li><code>storage</code>: Used to securely store user preferences, customized whitelist/blacklist domains, and local scan history within your browser's local sandbox.</li>
+            <li><code>webNavigation</code>: Used to detect navigation events locally and perform instant heuristic analysis before credential entry.</li>
+        </ul>
+
+        <h2>3. Data Sharing & Third Parties</h2>
+        <ul>
+            <li>We do <strong>not</strong> sell, lease, trade, or transfer any user data to third parties.</li>
+            <li>No data ever leaves your device.</li>
+        </ul>
+
+        <h2>4. Contact Information</h2>
+        <p>If you have any questions or inquiries regarding this Privacy Policy, please reach out via our GitHub repository or developer contact:</p>
+        <p>GitHub: <a href="https://github.com/aayushkrprasad/phishing-detector-extension" target="_blank" rel="noopener noreferrer">https://github.com/aayushkrprasad/phishing-detector-extension</a></p>
+        <p>Developer Contact: <code>aayushkrprasad1007@gmail.com</code></p>
+
+        <div class="footer">
+            &copy; 2026 Phishing Detector Pro. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
