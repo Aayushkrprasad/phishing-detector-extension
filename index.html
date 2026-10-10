@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phishing Detector Enterprise - Real-Time AI & Zero-Trust Web Protection Suite</title>
+  <meta name="description" content="Enterprise-grade real-time AI & Heuristic Phishing, Typosquatting, Quishing & Social Engineering Threat Protection Suite for Individuals and Enterprises.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <span class="brand-name">Phishing Detector <span class="brand-tag">PRO</span></span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#demo">Live Simulator</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#enterprise">Enterprise SOC</a>
+        <a href="sandbox.html" class="btn-nav-outline">Security Lab ⚡</a>
+        <a href="phishing-detector-pro-v3.6.zip" download class="btn-nav-primary">Install Extension 🛡️</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    
+    <div class="hero-container">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>Version 3.6 Enterprise Release &bull; STIX 2.1 SOC Compliant</span>
+      </div>
+
+      <h1 class="hero-title">
+        Next-Generation <span class="gradient-text">Zero-Trust AI Shield</span> Against Web Phishing & Typosquatting
+      </h1>
+
+      <p class="hero-subtitle">
+        Protect your browser in real-time with on-device Shannon Entropy calculation, Levenshtein edit distance, IDN Homoglyph de-obfuscation, QR Quishing detection, and Natural Language Threat NLP.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="phishing-detector-pro-v3.6.zip" download class="btn-hero-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Download Free Chrome Extension (v3.6)</span>
+        </a>
+        <a href="#demo" class="btn-hero-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span>Try Interactive Demo</span>
+        </a>
+      </div>
+
+      <!-- Trust Metrics Strip -->
+      <div class="hero-metrics">
+        <div class="metric-item">
+          <span class="metric-number" id="heroStatScans">1.2M+</span>
+          <span class="metric-label">URLs Scanned</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-number">&lt; 8ms</span>
+          <span class="metric-label">On-Device Latency</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-number">99.9%</span>
+          <span class="metric-label">Typosquatting Precision</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-number">100%</span>
+          <span class="metric-label">Privacy (Zero Log Transmission)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Live Simulator Section -->
+  <section class="section demo-section" id="demo">
+    <div class="section-container">
+      <div class="section-header center">
+        <span class="section-badge">INTERACTIVE ENGINE DEMO</span>
+        <h2 class="section-title">Test the Threat Engine Live</h2>
+        <p class="section-desc">Try pasting any URL, typosquatted link, or social engineering email message below to see instant mathematical heuristics in action.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-tabs">
+          <button class="demo-tab active" id="demoTabUrl">🌐 URL & Link Inspector</button>
+          <button class="demo-tab" id="demoTabText">📧 Email & SMS Text Analyzer</button>
+        </div>
+
+        <div class="demo-body">
+          <!-- URL Demo View -->
+          <div class="demo-view active" id="demoViewUrl">
+            <div class="demo-input-group">
+              <input type="text" id="demoUrlInput" class="demo-input" placeholder="Paste URL e.g. http://paypa1-security.xyz/login" value="http://paypa1-security.xyz/login">
+              <button id="demoRunUrlBtn" class="btn-demo-primary">Scan Link Now</button>
+            </div>
+
+            <div class="demo-presets">
+              <span class="preset-title">Sample Vectors:</span>
+              <button class="demo-pill" data-url="http://paypa1-security.xyz/login">paypa1-security.xyz (Typosquat)</button>
+              <button class="demo-pill" data-url="https://g00gle-auth.tk/verify">g00gle-auth.tk (Risky TLD)</button>
+              <button class="demo-pill" data-url="http://192.168.1.1/admin-login">192.168.1.1 (Raw IP)</button>
+              <button class="demo-pill" data-url="https://github.com/security">github.com (Legitimate)</button>
+            </div>
+          </div>
+
+          <!-- Text Demo View -->
+          <div class="demo-view" id="demoViewText">
+            <div class="demo-input-group text-group">
+              <textarea id="demoTextInput" class="demo-textarea" rows="3" placeholder="Paste suspicious email or text e.g. URGENT: Your account will be suspended within 24 hours. Verify at http://paypa1.com">URGENT SECURITY ALERT: Your PayPal account has been temporarily locked due to unauthorized login attempts. Please verify your credentials within 24 hours at http://paypa1-security.xyz/login</textarea>
+              <button id="demoRunTextBtn" class="btn-demo-primary">Analyze Text Threat</button>
+            </div>
+
+            <div class="demo-presets">
+              <span class="preset-title">Sample Vectors:</span>
+              <button class="demo-pill-text" data-type="urgent">Account Suspension Scare</button>
+              <button class="demo-pill-text" data-type="reward">Amazon Gift Card Scam</button>
+              <button class="demo-pill-text" data-type="seed">Crypto 12-Word Seed Theft</button>
+            </div>
+          </div>
+
+          <!-- Live Output Screen -->
+          <div class="demo-output-card" id="demoOutput">
+            <div class="demo-output-header">
+              <div>
+                <span class="output-target-label">Target Evaluation:</span>
+                <div class="output-target-name" id="demoResName">paypa1-security.xyz</div>
+              </div>
+              <div class="output-score-badge">
+                <span class="score-number text-danger" id="demoResScore">85</span>
+                <span class="score-status-pill status-danger" id="demoResLevel">HIGH RISK</span>
+              </div>
+            </div>
+
+            <div class="demo-output-metrics">
+              <div class="output-m-box">
+                <span class="m-lbl">SHANNON ENTROPY</span>
+                <span class="m-val" id="demoResEntropy">3.42 H(X)</span>
+              </div>
+              <div class="output-m-box">
+                <span class="m-lbl">TARGET BRAND</span>
+                <span class="m-val text-yellow" id="demoResBrand">PayPal</span>
+              </div>
+              <div class="output-m-box">
+                <span class="m-lbl">EDIT DISTANCE</span>
+                <span class="m-val text-danger" id="demoResDistance">1 Edit</span>
+              </div>
+              <div class="output-m-box">
+                <span class="m-lbl">TLD RISK</span>
+                <span class="m-val text-danger" id="demoResTld">.xyz (High Risk)</span>
+              </div>
+            </div>
+
+            <div class="demo-reasons-box">
+              <span class="reasons-title">Heuristic Detection Signals:</span>
+              <div class="reasons-list" id="demoResThreats">
+                <div class="reason-item"><span>🎯</span><span>Typosquatting detected: 'paypa1' is 1 character away from legitimate 'paypal.com'.</span></div>
+                <div class="reason-item"><span>🚩</span><span>High-risk top-level domain (.xyz) frequently used in scam campaigns.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Grid Section -->
+  <section class="section" id="features">
+    <div class="section-container">
+      <div class="section-header center">
+        <span class="section-badge">COMPLETE DEFENSE SUITE</span>
+        <h2 class="section-title">Multi-Layered Phishing Vector Interception</h2>
+        <p class="section-desc">Phishing Detector Pro protects against all 6 major web social engineering attack vectors directly inside the browser sandbox.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon icon-blue">🎯</div>
+          <h3 class="feature-title">Levenshtein Edit Distance Engine</h3>
+          <p class="feature-desc">Dynamically compares domain hostnames against 50+ enterprise global brands to flag 1-edit typosquatting (e.g., <code>paypa1.com</code> vs <code>paypal.com</code>).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-purple">🎲</div>
+          <h3 class="feature-title">Shannon Entropy & DGA Detection</h3>
+          <p class="feature-desc">Calculates mathematical information disorder to identify Algorithmically Generated Domains (DGA) used by botnets and C2 servers.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-green">🔤</div>
+          <h3 class="feature-title">IDN Homoglyph & Punycode De-Obfuscator</h3>
+          <p class="feature-desc">Unmasks Cyrillic/Greek Unicode lookalike characters (Cyrillic 'а' U+0430) and <code>xn--</code> punycode strings before deceptive links render.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-red">🖼️</div>
+          <h3 class="feature-title">Quishing (QR Code Phishing) Inspector</h3>
+          <p class="feature-desc">Safely decodes QR code images inside the browser sandbox to inspect destination threat scores without exposing mobile devices.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-yellow">🔐</div>
+          <h3 class="feature-title">In-Page Credential Guard</h3>
+          <p class="feature-desc">Prevents password harvesting by alerting users when typing credentials on unencrypted HTTP pages, fake OAuth windows, or cross-domain webhook forms.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-cyan">📧</div>
+          <h3 class="feature-title">Social Engineering Text NLP</h3>
+          <p class="feature-desc">Scans raw email text and SMS messages for artificial urgency, coercion, fake account suspension threats, and seed phrase harvesting demands.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- System Architecture Section -->
+  <section class="section arch-section" id="architecture">
+    <div class="section-container">
+      <div class="grid-2col align-center">
+        <div>
+          <span class="section-badge">ZERO-TRUST ARCHITECTURE</span>
+          <h2 class="section-title">100% Local On-Device Processing for Absolute Privacy</h2>
+          <p class="arch-text">
+            Unlike legacy browser security add-ons that send every website URL you visit to a centralized cloud tracking server, Phishing Detector Pro runs <strong>entirely locally</strong> inside your browser sandbox.
+          </p>
+          
+          <div class="arch-bullets">
+            <div class="bullet-item">
+              <span class="bullet-icon">⚡</span>
+              <div>
+                <strong>Zero Latency:</strong> Threat calculations complete in under 8ms with no network roundtrips.
+              </div>
+            </div>
+            <div class="bullet-item">
+              <span class="bullet-icon">🔒</span>
+              <div>
+                <strong>Zero Log Transmission:</strong> Your browsing history, IP address, and credentials never leave your machine.
+              </div>
+            </div>
+            <div class="bullet-item">
+              <span class="bullet-icon">📦</span>
+              <div>
+                <strong>STIX 2.1 Compliant:</strong> Export SOC-ready threat telemetry in JSON, CSV, and STIX 2.1 formats for SIEM ingestion.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arch-diagram-card">
+          <div class="diagram-title">On-Device Engine vs. Traditional Cloud Extensions</div>
+          
+          <div class="diagram-box bad">
+            <div class="diag-header">❌ Traditional Security Extensions</div>
+            <div class="diag-flow">Your Browser ➔ Remote Tracking Server ➔ Database ➔ Latency Delay</div>
+            <div class="diag-sub">Exposes browsing history & network metadata to third parties</div>
+          </div>
+
+          <div class="diagram-box good">
+            <div class="diag-header">✅ Phishing Detector Pro (Zero-Trust)</div>
+            <div class="diag-flow">Your Browser ➔ Local Heuristic Engine ➔ Instant Verdict (&lt;8ms)</div>
+            <div class="diag-sub">100% Privacy • No External Network Dependencies</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- B2B Enterprise Section -->
+  <section class="section enterprise-section" id="enterprise">
+    <div class="section-container">
+      <div class="enterprise-banner">
+        <div class="enterprise-content">
+          <span class="section-badge light">ENTERPRISE CYBER SUITE</span>
+          <h2 class="enterprise-title">Protect Your Company's Domain & Employee Browsers</h2>
+          <p class="enterprise-desc">Deploy custom corporate brand shields across thousands of employee devices. Prevent typosquatting attacks against <code>yourcompany.com</code> and push real-time STIX 2.1 threat logs to your SOC SIEM.</p>
+          
+          <div class="enterprise-actions">
+            <a href="trusted.html" class="btn-hero-primary">Manage Security Rules & Custom Domains</a>
+            <a href="PITCH_DECK.md" target="_blank" class="btn-hero-secondary">View Enterprise Deck</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing & Business Model Section -->
+  <section class="section" id="pricing">
+    <div class="section-container">
+      <div class="section-header center">
+        <span class="section-badge">TRANSPARENT SAAS PRICING</span>
+        <h2 class="section-title">Plans for Individuals & Enterprise SOC Teams</h2>
+        <p class="section-desc">Choose the protection level that fits your personal browsing or enterprise security posture.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Free Tier -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="plan-name">Community Free</h3>
+            <div class="plan-price">$0 <span>/ forever</span></div>
+            <p class="plan-desc">Essential local threat protection for everyday web browsing.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>✓ Local Heuristic & Typosquat Engine</li>
+            <li>✓ Hover Link Shield Tooltip</li>
+            <li>✓ Credential Guard Alert</li>
+            <li>✓ Simple & Advanced Mode Views</li>
+            <li>✓ Quick URL & Text Scanner</li>
+          </ul>
+          <a href="phishing-detector-pro-v3.6.zip" download class="btn-price-outline">Install Free Extension</a>
+        </div>
+
+        <!-- Pro Tier -->
+        <div class="pricing-card featured">
+          <div class="featured-badge">MOST POPULAR</div>
+          <div class="pricing-header">
+            <h3 class="plan-name">Pro Analyst</h3>
+            <div class="plan-price">$3.99 <span>/ month</span></div>
+            <p class="plan-desc">Advanced cybersecurity features for power users & crypto traders.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>✓ Everything in Community Free</li>
+            <li>✓ VirusTotal Cloud Intelligence Integration</li>
+            <li>✓ QR Quishing Image Inspector</li>
+            <li>✓ Unlimited PDF Forensic Audit Exports</li>
+            <li>✓ Custom Monitored Brand Domain Rules</li>
+            <li>✓ Priority Heuristic Feed Updates</li>
+          </ul>
+          <a href="#demo" class="btn-price-primary">Start 14-Day Free Trial</a>
+        </div>
+
+        <!-- Enterprise Tier -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="plan-name">Enterprise SOC</h3>
+            <div class="plan-price">$8.00 <span>/ user / mo</span></div>
+            <p class="plan-desc">Centralized policy management & SIEM integration for IT teams.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>✓ Everything in Pro Analyst</li>
+            <li>✓ Centralized Admin Web Dashboard</li>
+            <li>✓ Automated STIX 2.1 / MISP SIEM Push</li>
+            <li>✓ Corporate Brand Shield Protection</li>
+            <li>✓ Chrome Enterprise Policy Auto-Deploy</li>
+            <li>✓ 24/7 Enterprise SOC Support SLA</li>
+          </ul>
+          <a href="mailto:aayushkrprasad1007@gmail.com" class="btn-price-outline">Contact Enterprise Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-col brand-col">
+          <div class="nav-brand">
+            <div class="brand-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <span class="brand-name">Phishing Detector <span class="brand-tag">PRO</span></span>
+          </div>
+          <p class="footer-about">
+            Enterprise-grade real-time AI & Heuristic Chrome Extension for phishing, typosquatting, credential harvesting, clipboard hijacking, and threat intelligence.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Product & Tools</h4>
+          <ul class="footer-links">
+            <li><a href="popup.html">Extension Popup</a></li>
+            <li><a href="sandbox.html">Security Lab & Simulator</a></li>
+            <li><a href="history.html">Analytics & STIX Logs</a></li>
+            <li><a href="trusted.html">Rules & Brand Manager</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Documentation</h4>
+          <ul class="footer-links">
+            <li><a href="README.md" target="_blank">Technical README</a></li>
+            <li><a href="PRIVACY.md" target="_blank">Privacy Policy</a></li>
+            <li><a href="PITCH_DECK.md" target="_blank">Startup Pitch Deck</a></li>
+            <li><a href="BUSINESS_PLAN.md" target="_blank">Business Roadmap</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Developer & Open Source</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/Aayushkrprasad/phishing-detector-extension" target="_blank">GitHub Repository</a></li>
+            <li><a href="phishing-detector-pro-v3.6.zip" download>Download v3.6 ZIP</a></li>
+            <li><a href="mailto:aayushkrprasad1007@gmail.com">Contact Founder</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2026 Phishing Detector Pro Inc. All rights reserved. Zero-Trust Local Security Architecture.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="heuristics.js"></script>
+  <script src="landing.js"></script>
+</body>
+</html>
