@@ -11,10 +11,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   let isRealTimeShieldEnabled = true;
   let currentUserMode = "simple";
 
-  // Initialize UI Mode, Tabs, Scanner and Settings
+  // Initialize UI Mode, Tabs, Scanner, Text Analyzer and Settings
   initUserMode();
   initPopupModeTabs();
   initQuickScanner();
+  initTextAnalyzer();
   await initSettingsToggles();
 
   // Query Current Active Tab
@@ -124,29 +125,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /**
-   * Tab Switching between Live Tab & Quick Scanner
+   * Tab Switching between Live Tab, Quick Scanner & Text Analyzer
    */
   function initPopupModeTabs() {
     const liveBtn = document.getElementById("tabLiveBtn");
     const scanBtn = document.getElementById("tabScannerBtn");
+    const textBtn = document.getElementById("tabTextBtn");
     const liveSec = document.getElementById("liveTabSection");
     const scanSec = document.getElementById("scannerSection");
+    const textSec = document.getElementById("textSection");
 
-    if (liveBtn && scanBtn) {
-      liveBtn.addEventListener("click", () => {
-        liveBtn.classList.add("active");
-        scanBtn.classList.remove("active");
-        liveSec.classList.add("active");
-        scanSec.classList.remove("active");
-      });
-
-      scanBtn.addEventListener("click", () => {
-        scanBtn.classList.add("active");
-        liveBtn.classList.remove("active");
-        scanSec.classList.add("active");
-        liveSec.classList.remove("active");
-      });
+    function setActiveTab(btn, sec) {
+      [liveBtn, scanBtn, textBtn].forEach(b => b && b.classList.remove("active"));
+      [liveSec, scanSec, textSec].forEach(s => s && s.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      if (sec) sec.classList.add("active");
     }
+
+    if (liveBtn) liveBtn.addEventListener("click", () => setActiveTab(liveBtn, liveSec));
+    if (scanBtn) scanBtn.addEventListener("click", () => setActiveTab(scanBtn, scanSec));
+    if (textBtn) textBtn.addEventListener("click", () => setActiveTab(textBtn, textSec));
   }
 
   /**
@@ -259,6 +257,75 @@ document.addEventListener("DOMContentLoaded", async () => {
           setTimeout(() => { btnTxt.textContent = "Copy Forensic Report"; }, 2000);
         });
       });
+    }
+  }
+
+  /**
+   * Text & Message Social Engineering Analyzer Module
+   */
+  function initTextAnalyzer() {
+    const textInput = document.getElementById("textAnalyzerInput");
+    const textBtn = document.getElementById("textScanBtn");
+    const resultCard = document.getElementById("textScanResult");
+
+    if (textBtn) textBtn.addEventListener("click", runTextScan);
+
+    // Text sample pills
+    document.querySelectorAll(".text-sample-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.getAttribute("data-sample");
+        if (type === "urgent") {
+          textInput.value = "URGENT: Your account will be suspended within 24 hours due to unauthorized activity. Verify immediately at http://paypa1-security.xyz/login";
+        } else if (type === "reward") {
+          textInput.value = "Congratulations! You have won a $500 Amazon Gift Card. Claim your reward now at http://amazn-prime-reward.top/claim";
+        } else if (type === "otp") {
+          textInput.value = "Security Alert: Please reply with your 6-digit OTP and verify your password to secure your banking portal.";
+        }
+        runTextScan();
+      });
+    });
+
+    function runTextScan() {
+      const raw = textInput.value ? textInput.value.trim() : "";
+      if (!raw) return;
+
+      const evalData = window.ThreatEngine
+        ? window.ThreatEngine.evaluateTextThreat(raw)
+        : { risk: 75, level: "HIGH_RISK", threats: [{ icon: "⚠️", text: "Urgency and suspicious keywords" }] };
+
+      if (resultCard) resultCard.style.display = "block";
+
+      document.getElementById("textScoreVal").textContent = evalData.risk;
+      const scoreLabel = document.getElementById("textScoreLabel");
+      const scoreNum = document.getElementById("textScoreVal");
+
+      if (evalData.risk >= 60) {
+        scoreLabel.className = "quick-score-pill status-danger";
+        scoreLabel.textContent = "HIGH RISK";
+        scoreNum.style.color = "var(--accent-danger)";
+      } else if (evalData.risk >= 25) {
+        scoreLabel.className = "quick-score-pill status-warn";
+        scoreLabel.textContent = "CAUTION";
+        scoreNum.style.color = "var(--accent-warn)";
+      } else {
+        scoreLabel.className = "quick-score-pill status-safe";
+        scoreLabel.textContent = "SAFE";
+        scoreNum.style.color = "var(--accent-safe)";
+      }
+
+      const listEl = document.getElementById("textThreatsList");
+      listEl.innerHTML = "";
+
+      if (evalData.threats && evalData.threats.length > 0) {
+        evalData.threats.forEach(t => {
+          const item = document.createElement("div");
+          item.className = "reason-item";
+          item.innerHTML = `<span>${t.icon || '⚠️'}</span><span>${t.text}</span>`;
+          listEl.appendChild(item);
+        });
+      } else {
+        listEl.innerHTML = `<div class="reason-item" style="color: var(--accent-safe);"><span>🛡️</span><span>No malicious social engineering phrases or suspicious links found.</span></div>`;
+      }
     }
   }
 

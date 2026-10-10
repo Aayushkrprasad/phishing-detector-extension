@@ -137,15 +137,59 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Save VirusTotal API Key
-    const apiKeyForm = document.getElementById("apiKeyForm");
-    if (apiKeyForm) {
-      apiKeyForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const key = document.getElementById("vtApiKeyInput").value.trim();
-        chrome.storage.local.set({ vtApiKey: key }, () => {
-          alert(key ? "VirusTotal API Key saved successfully." : "VirusTotal API Key cleared.");
+    // Export Security Rules
+    const exportBtn = document.getElementById("exportRulesBtn");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", () => {
+        chrome.storage.local.get(["trustedSites", "customBlacklist"], (res) => {
+          const rulesData = {
+            version: "3.5",
+            exportedAt: new Date().toISOString(),
+            trustedSites: res.trustedSites || [],
+            customBlacklist: res.customBlacklist || []
+          };
+          const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rulesData, null, 2));
+          const dl = document.createElement("a");
+          dl.setAttribute("href", dataStr);
+          dl.setAttribute("download", `phishing_detector_rules_${Date.now()}.json`);
+          document.body.appendChild(dl);
+          dl.click();
+          dl.remove();
         });
+      });
+    }
+
+    // Import Security Rules
+    const importBtn = document.getElementById("importRulesBtn");
+    const fileInput = document.getElementById("importFileInput");
+
+    if (importBtn && fileInput) {
+      importBtn.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            chrome.storage.local.get(["trustedSites", "customBlacklist"], (res) => {
+              let trusted = new Set([...(res.trustedSites || []), ...(data.trustedSites || [])]);
+              let blacklist = new Set([...(res.customBlacklist || []), ...(data.customBlacklist || [])]);
+
+              chrome.storage.local.set({
+                trustedSites: Array.from(trusted),
+                customBlacklist: Array.from(blacklist)
+              }, () => {
+                alert(`Successfully imported ${data.trustedSites?.length || 0} trusted domains and ${data.customBlacklist?.length || 0} blacklisted domains!`);
+                loadLists();
+              });
+            });
+          } catch (err) {
+            alert("Failed to parse JSON rules file. Please ensure it is a valid format.");
+          }
+        };
+        reader.readAsText(file);
       });
     }
   }

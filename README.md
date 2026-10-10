@@ -1,6 +1,6 @@
-# 🔐 Phishing Detector Pro v3.5 (Enterprise Cyber Suite)
+# 🔐 Phishing Detector Pro v3.6 (Enterprise Cyber Suite)
 
-An enterprise-grade, real-time AI & Heuristic Chrome Extension for phishing, typosquatting, credential harvesting, clipboard hijacking, and social engineering threat detection.
+An enterprise-grade, real-time AI & Heuristic Chrome Extension for phishing, typosquatting, credential harvesting, clipboard hijacking, social engineering text inspection, and Threat Intelligence.
 
 ---
 
@@ -11,29 +11,35 @@ An enterprise-grade, real-time AI & Heuristic Chrome Extension for phishing, typ
 - **Advanced Mode**: 1-click toggle to unlock deep threat telemetry, Shannon Entropy meters, Levenshtein edit distance calculations, forensic logs, and interactive labs.
 
 ### 1. 🛡️ In-Page Active Defense (Zero-Trust Browsing)
+- **Automatic High-Risk Page Warning Toast**: Instant on-screen security alert when landing on dangerous or typosquatted sites.
 - **Hover Link Shield**: Real-time mouse hover listener with floating security badge (🟢 Verified / 🟡 Caution / 🔴 Phishing Risk) showing destination threat score before clicking.
 - **In-Page Credential Guard**: Prevents credential harvesting by alerting before passwords or credit card numbers are typed on unencrypted HTTP or high-risk domains.
 - **Fake OAuth & Window Modal Detector**: Detects DOM elements simulating browser login windows (e.g., fake "Sign in with Google" / "Sign in with Microsoft" dialogs).
 - **Crypto Clipboard Hijacking (Clipjacking) Sentinel**: Detects and alerts if malicious page scripts attempt to replace copied Bitcoin, Ethereum, or Solana wallet addresses.
 - **Cross-Domain Webhook Exfiltration Interceptor**: Flags forms attempting to exfiltrate submitted form data directly to unauthorized external endpoints (e.g. Discord webhooks or Telegram bots).
 
-### 2. 🔍 Instant URL & Phishing Inspector (In-Popup Scanner)
-- Paste any raw URL, email link, or SMS message directly into the popup.
-- Instantly computes mathematical Shannon Entropy, checks against 50+ canonical global brand permutations, inspects TLD risk, and generates a full forensic threat report.
-- **1-Click Copy Forensic Report**: Quickly copy structured forensic audit summaries to clipboard.
+### 2. 📧 Email & SMS Social Engineering Text Analyzer
+- Dedicated Text Analyzer tab in the Popup and Security Lab.
+- Evaluates raw email text, SMS, or WhatsApp messages for psychological panic triggers, artificial urgency, fake account suspension warnings, gift card/lottery scams, OTP theft demands, and suspicious embedded URLs.
 
-### 3. 🧪 Interactive Threat Simulator & Security Lab (`sandbox.html`)
-A dedicated interactive cybersecurity testbed with 6 hands-on attack modules:
+### 3. 🔍 Instant URL & Phishing Inspector (In-Popup Scanner)
+- Multi-tab popup interface (**Live Tab**, **URL Scanner**, and **Text Analyzer**).
+- Instantly computes mathematical Shannon Entropy, checks against 50+ canonical global brand permutations, inspects TLD risk, and generates a full forensic threat report.
+- **1-Click Copy & PDF Audit Export**: Quickly copy structured forensic audit summaries or print PDF audit reports.
+
+### 4. 🧪 Interactive Threat Simulator & Security Lab (`sandbox.html`)
+A dedicated interactive cybersecurity testbed with 7 hands-on attack modules:
 1. 🎯 **Typosquatting & Levenshtein Matrix**: Computes dynamic 1-edit distance against top enterprise domains with explanatory threat analysis.
 2. 🎲 **Shannon Entropy & DGA Generator**: Measures information disorder and simulates botnet algorithmic domain generation.
 3. 🔤 **IDN Homoglyph & Punycode Resolver**: De-obfuscates Cyrillic/Greek Unicode lookalikes and `xn--` punycode strings.
 4. 🖼️ **Quishing (QR Code Phishing) Analyzer**: Safely inspects and decodes QR codes inside the sandbox without exposing mobile devices.
 5. 🔐 **Credential & Form Hijack Simulator**: Interactive demonstration of real-time form interception and defensive guard banners.
-6. ⚡ **Live Threat Payload Sandbox**: Test custom URLs and payloads with real-time heuristic scoring.
+6. 📧 **Email & SMS Social Engineering Inspector**: Evaluates text message content and extracts embedded threat vectors.
+7. ⚡ **Live Threat Payload Sandbox**: Test custom URLs and payloads with real-time heuristic scoring.
 
-### 4. 📊 Security Analytics & STIX 2.1 / IOC Compliance
+### 5. 📊 Security Analytics, Rule Backup & STIX 2.1 / IOC Compliance
 - Real-time KPI summary cards (Total Scans, Phishing Blocked, Safe Domain Rate %).
-- Forensic inspection modal with deep score breakdowns.
+- **JSON Security Rules Import/Export**: Backup Whitelist/Blacklist rules or import external threat list bundles (`trusted.html`).
 - **Export Security Audit Reports** in **CSV**, **JSON**, and standardized **STIX 2.1 IOC** (Indicators of Compromise) for SOC teams.
 
 ---

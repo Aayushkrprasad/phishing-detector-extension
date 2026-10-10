@@ -281,11 +281,12 @@ const ThreatEngine = (() => {
 
     // 9. Protected Brands Impersonation & Keyword Squatting
     if (!typosquattingFound) {
-      for (const brand of PROTECTED_BRANDS) {
+      const allBrands = [...PROTECTED_BRANDS, ...(ThreatEngine.customBrands || [])];
+      for (const brand of allBrands) {
         const isOfficial = host === brand.domain || host.endsWith("." + brand.domain);
         if (!isOfficial) {
           const normalizedHost = normalizeHomoglyphs(host);
-          for (const kw of brand.keywords) {
+          for (const kw of (brand.keywords || [brand.name.toLowerCase()])) {
             if (host.includes(kw) || normalizedHost.includes(kw)) {
               risk += 40;
               threats.push({
@@ -327,6 +328,126 @@ const ThreatEngine = (() => {
   }
 
   /**
+   * Evaluate Email, SMS & Social Engineering Text Content for Phishing Indicators
+   */
+  function evaluateTextThreat(rawText) {
+    if (!rawText || typeof rawText !== "string") {
+      return { risk: 0, level: "SAFE", threats: [], urgencyScore: 0, extractedUrls: [], recommendations: [] };
+    }
+
+    let risk = 0;
+    let urgencyScore = 0;
+    const threats = [];
+    const recommendations = [];
+    const textLower = rawText.toLowerCase();
+
+    // 1. High-Urgency & Panic Triggers
+    const urgencyKeywords = [
+      { kw: "account will be suspended", risk: 25, urgency: 30, text: "Artificial urgency: Threat of account suspension." },
+      { kw: "immediate action required", risk: 20, urgency: 25, text: "High urgency trigger: Requires immediate action." },
+      { kw: "unauthorized login attempt", risk: 20, urgency: 20, text: "Scare tactic: Claims unauthorized access occurred." },
+      { kw: "within 24 hours", risk: 15, urgency: 25, text: "Time pressure: Imposes 24-hour deadline." },
+      { kw: "final notice", risk: 25, urgency: 30, text: "Coercive warning: Uses 'final notice' pressure." },
+      { kw: "security breach", risk: 20, urgency: 20, text: "Security scare tactic: Mentions security breach." }
+    ];
+
+    for (const item of urgencyKeywords) {
+      if (textLower.includes(item.kw)) {
+        risk += item.risk;
+        urgencyScore += item.urgency;
+        threats.push({ icon: "⏳", type: "URGENCY_TRIGGER", text: item.text });
+      }
+    }
+
+    // 2. Financial & Gift Scam Patterns
+    const financialScams = [
+      { kw: "claim your gift card", risk: 30, text: "Reward scam: Offers free gift card/prize." },
+      { kw: "you have won", risk: 30, text: "Lottery/Winner scam: Claims recipient won a prize." },
+      { kw: "wire transfer", risk: 25, text: "Financial request: Asks for wire transfer." },
+      { kw: "bitcoin payment", risk: 30, text: "Cryptocurrency demand: Mentions Bitcoin/Crypto payment." },
+      { kw: "refund pending", risk: 20, text: "Refund bait: Claims pending money refund." },
+      { kw: "kyc update required", risk: 25, text: "Banking scam: Demands immediate KYC update." }
+    ];
+
+    for (const item of financialScams) {
+      if (textLower.includes(item.kw)) {
+        risk += item.risk;
+        threats.push({ icon: "💰", type: "FINANCIAL_SCAM", text: item.text });
+      }
+    }
+
+    // 3. Credential & Sensitive Data Harvesting Demands
+    const credentialHarvesters = [
+      { kw: "verify your password", risk: 35, text: "Credential harvesting: Demands password verification." },
+      { kw: "send your otp", risk: 40, text: "OTP theft: Asks for One-Time Password." },
+      { kw: "seed phrase", risk: 45, text: "Crypto theft: Mentions 12/24 word seed phrase." },
+      { kw: "social security number", risk: 35, text: "PII harvesting: Requests SSN or government ID." },
+      { kw: "confirm credit card", risk: 35, text: "Payment theft: Asks to confirm credit card details." }
+    ];
+
+    for (const item of credentialHarvesters) {
+      if (textLower.includes(item.kw)) {
+        risk += item.risk;
+        threats.push({ icon: "🔑", type: "CREDENTIAL_HARVEST", text: item.text });
+      }
+    }
+
+    // 4. Extract and analyze embedded URLs
+    const urlRegex = /(https?:\/\/[^\s<"'>]+)/gi;
+    const extractedRawUrls = rawText.match(urlRegex) || [];
+    const extractedUrls = [];
+
+    for (const rawUrl of extractedRawUrls) {
+      const evalResult = evaluateUrlThreat(rawUrl);
+      extractedUrls.push({ url: rawUrl, evaluation: evalResult });
+      if (evalResult.risk >= 50) {
+        risk += 35;
+        threats.push({
+          icon: "🔗",
+          type: "SUSPICIOUS_EMBEDDED_URL",
+          text: `Contains high-risk embedded link: ${evalResult.hostname} (${evalResult.threats[0]?.text || "Flagged link"})`
+        });
+      } else if (evalResult.risk >= 25) {
+        risk += 15;
+        threats.push({
+          icon: "⚠️",
+          type: "WARNED_EMBEDDED_URL",
+          text: `Contains suspicious link: ${evalResult.hostname}`
+        });
+      }
+    }
+
+    // Bound risk to 0-100
+    risk = Math.min(Math.max(risk, 0), 100);
+    urgencyScore = Math.min(Math.max(urgencyScore, 0), 100);
+
+    let level = "SAFE";
+    if (risk >= 60) level = "HIGH_RISK";
+    else if (risk >= 25) level = "SUSPICIOUS";
+
+    // Build Recommendations
+    if (risk >= 60) {
+      recommendations.push("Do not click any links or download attachments in this message.");
+      recommendations.push("Do not reply with passwords, OTPs, or financial details.");
+      recommendations.push("Verify sender by contacting the organization directly via official phone or website.");
+    } else if (risk >= 25) {
+      recommendations.push("Exercise caution before clicking links in this email.");
+      recommendations.push("Check sender domain carefully for typosquatting or homoglyphs.");
+    } else {
+      recommendations.push("No obvious social engineering flags detected in text.");
+    }
+
+    return {
+      risk,
+      level,
+      threats,
+      urgencyScore,
+      extractedUrls,
+      recommendations
+    };
+  }
+
+  /**
    * VirusTotal Online Threat Intelligence API Helper
    */
   async function queryVirusTotalThreat(rawUrl, apiKey) {
@@ -355,15 +476,27 @@ const ThreatEngine = (() => {
     }
   }
 
+  const customBrands = [];
+
+  function registerCustomBrand(name, domain) {
+    if (!name || !domain) return;
+    const kw = name.toLowerCase().replace(/\s+/g, "");
+    customBrands.push({ name, domain, keywords: [kw] });
+    CANONICAL_DOMAINS.push(domain);
+  }
+
   return {
     PROTECTED_BRANDS,
     CANONICAL_DOMAINS,
     HIGH_RISK_TLDS,
+    customBrands,
+    registerCustomBrand,
     levenshteinDistance,
     calculateShannonEntropy,
     normalizeHomoglyphs,
     getBaseDomain,
     evaluateUrlThreat,
+    evaluateTextThreat,
     queryVirusTotalThreat
   };
 })();
@@ -377,3 +510,4 @@ if (typeof self !== "undefined") {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = ThreatEngine;
 }
+

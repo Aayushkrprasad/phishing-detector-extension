@@ -270,18 +270,19 @@
       </div>
     </div>
 
-    <!-- Online Threat Intelligence API Settings Card -->
+    <!-- Rule Backup & Import/Export Card -->
     <div class="add-card" style="margin-top: 8px;">
-      <div style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-        <span>🌐 Online Threat Intelligence (VirusTotal Integration)</span>
+      <div style="font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
+        <span>📦 Security Rules Backup & Import / Export</span>
       </div>
       <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-        Optional: Enter your VirusTotal v3 API Key for real-time online cloud domain threat intelligence lookups.
+        Backup your configured trusted and blacklisted domain rules or import external threat list bundles.
       </div>
-      <form id="apiKeyForm" class="form-row" style="margin-top: 10px;">
-        <input type="password" id="vtApiKeyInput" class="domain-input" placeholder="Paste VirusTotal API Key e.g. a8f9x1z..." autocomplete="off">
-        <button type="submit" id="saveApiKeyBtn" class="btn btn-add-safe">Save Key</button>
-      </form>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="exportRulesBtn" class="btn" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #93C5FD;">Export Rules JSON</button>
+        <button id="importRulesBtn" class="btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-main);">Import Rules JSON</button>
+        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+      </div>
     </div>
   </div>
 

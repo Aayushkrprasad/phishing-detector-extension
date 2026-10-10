@@ -542,12 +542,32 @@
     });
   }
 
+  function checkPageThreatOnLoad() {
+    if (userSettings.realTimeShieldEnabled === false) return;
+    const currentHost = window.location.hostname.toLowerCase();
+    if (currentHost === "localhost" || currentHost === "127.0.0.1" || (window.__pdpTrustedSites || []).includes(currentHost)) return;
+
+    try {
+      const evaluation = window.ThreatEngine
+        ? window.ThreatEngine.evaluateUrlThreat(window.location.href)
+        : fallbackUrlEval(window.location.href);
+
+      if (evaluation.risk >= 60) {
+        showToastAlert(
+          "🚨 High Risk Phishing Site Warning",
+          `Phishing Detector Pro flagged this domain (${currentHost}) for severe threat signals (${evaluation.threats[0]?.text || "Phishing/Typosquatting"}). Do not submit sensitive data!`
+        );
+      }
+    } catch(e) {}
+  }
+
   // Initialize in-page tools when DOM is ready
   function initAll() {
     initLinkShield();
     initCredentialGuard();
     initFakeOAuthDetector();
     initClipboardGuard();
+    checkPageThreatOnLoad();
   }
 
   if (document.readyState === "loading") {

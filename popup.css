@@ -124,8 +124,8 @@ body {
 /* Mode Selector Bar */
 .popup-mode-bar {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
   background: rgba(0, 0, 0, 0.4);
   padding: 3px;
   border-radius: 10px;

@@ -184,7 +184,7 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 // Handle inter-extension messaging
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "GET_EXTENSION_STATUS") {
-    sendResponse({ status: "ACTIVE", version: "3.0" });
+    sendResponse({ status: "ACTIVE", version: "3.6" });
   }
   return true;
 });

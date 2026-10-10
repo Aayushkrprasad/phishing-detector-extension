@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initHomoglyphModule();
   initQuishingModule();
   initFormSimulatorModule();
+  initSocialTextModule();
   initPayloadSandbox();
   initIocExport();
 });
@@ -404,7 +405,63 @@ function initFormSimulatorModule() {
 }
 
 // -------------------------------------------------------------
-// 7. Live Payload Sandbox Module
+// 7. Email & SMS Social Engineering Module
+// -------------------------------------------------------------
+function initSocialTextModule() {
+  const inputEl = document.getElementById("socialTextInput");
+  const runBtn = document.getElementById("runSocialTestBtn");
+
+  document.querySelectorAll("[data-social-sample]").forEach(pill => {
+    pill.addEventListener("click", () => {
+      const type = pill.getAttribute("data-social-sample");
+      if (type === "suspension") {
+        inputEl.value = "URGENT WARNING: Your banking account will be suspended within 24 hours due to suspicious login attempts. Verify your identity immediately at http://secure-bank-login-update.tk/verify";
+      } else if (type === "crypto") {
+        inputEl.value = "Wallet Security Alert: Enter your 12-word seed phrase or private key to recover your compromised crypto assets immediately.";
+      } else if (type === "bank") {
+        inputEl.value = "HDFC Bank Alert: Your netbanking access is blocked due to pending KYC update. Click http://hdfc-netbanking-kyc.xyz to update payment information.";
+      }
+      executeSocialTest();
+    });
+  });
+
+  if (runBtn) runBtn.addEventListener("click", executeSocialTest);
+
+  executeSocialTest();
+
+  function executeSocialTest() {
+    const raw = inputEl ? inputEl.value.trim() : "";
+    if (!raw) return;
+
+    const evalData = window.ThreatEngine
+      ? window.ThreatEngine.evaluateTextThreat(raw)
+      : { risk: 80, level: "HIGH_RISK", urgencyScore: 75, threats: [{ icon: "⏳", text: "High urgency trigger" }] };
+
+    document.getElementById("resSocialScore").textContent = `${evalData.risk} / 100`;
+    document.getElementById("resSocialUrgency").textContent = `${evalData.urgencyScore} / 100`;
+
+    const verdictEl = document.getElementById("resSocialVerdict");
+    verdictEl.textContent = evalData.level;
+    verdictEl.className = `status-pill ${evalData.risk >= 60 ? 'status-danger' : evalData.risk >= 25 ? 'status-warn' : 'status-safe'}`;
+
+    const listEl = document.getElementById("socialThreatsList");
+    listEl.innerHTML = "";
+
+    if (evalData.threats && evalData.threats.length > 0) {
+      evalData.threats.forEach(t => {
+        const item = document.createElement("div");
+        item.className = "threat-flag";
+        item.innerHTML = `<span>${t.icon || '⚠️'}</span><span>${t.text}</span>`;
+        listEl.appendChild(item);
+      });
+    } else {
+      listEl.innerHTML = `<div class="threat-flag text-safe" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #6EE7B7;"><span>✅</span><span>No suspicious social engineering triggers detected. Text appears safe.</span></div>`;
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// 8. Live Payload Sandbox Module
 // -------------------------------------------------------------
 function initPayloadSandbox() {
   const inputEl = document.getElementById("customPayloadInput");
