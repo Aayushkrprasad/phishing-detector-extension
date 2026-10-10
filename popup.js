@@ -539,6 +539,47 @@ document.addEventListener("DOMContentLoaded", async () => {
    * Setup UI Event Listeners
    */
   function setupEventListeners() {
+    // Simple View Quick Add Custom URL
+    const simpleTrustBtn = document.getElementById("simpleAddTrustBtn");
+    const simpleBlockBtn = document.getElementById("simpleAddBlockBtn");
+    const simpleUrlInput = document.getElementById("simpleCustomUrlInput");
+    const simpleMsg = document.getElementById("simpleAddMsg");
+
+    function addCustomUrlFromSimple(type) {
+      if (!simpleUrlInput) return;
+      let val = simpleUrlInput.value.trim().toLowerCase();
+      if (!val) return;
+      try {
+        if (val.startsWith("http://") || val.startsWith("https://")) {
+          val = new URL(val).hostname;
+        }
+      } catch(e){}
+      val = val.replace(/^www\./, "");
+      if (!val) return;
+
+      const targetKey = type === "trust" ? "trustedSites" : "customBlacklist";
+      const oppositeKey = type === "trust" ? "customBlacklist" : "trustedSites";
+
+      chrome.storage.local.get([targetKey, oppositeKey], (res) => {
+        let targetList = res[targetKey] || [];
+        let oppositeList = (res[oppositeKey] || []).filter(h => h !== val);
+
+        if (!targetList.includes(val)) targetList.push(val);
+
+        chrome.storage.local.set({ [targetKey]: targetList, [oppositeKey]: oppositeList }, () => {
+          simpleUrlInput.value = "";
+          if (simpleMsg) {
+            simpleMsg.textContent = `Domain '${val}' added to ${type === "trust" ? "Trusted" : "Blacklisted"} list!`;
+            simpleMsg.style.display = "block";
+            setTimeout(() => { simpleMsg.style.display = "none"; }, 3000);
+          }
+        });
+      });
+    }
+
+    if (simpleTrustBtn) simpleTrustBtn.addEventListener("click", () => addCustomUrlFromSimple("trust"));
+    if (simpleBlockBtn) simpleBlockBtn.addEventListener("click", () => addCustomUrlFromSimple("block"));
+
     // Trust Site Button
     document.getElementById("trustSiteBtn").addEventListener("click", () => {
       if (!currentHostname) return;

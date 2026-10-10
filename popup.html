@@ -77,6 +77,17 @@
         </div>
       </div>
 
+      <!-- Quick Add Custom URL Card -->
+      <div class="simple-add-url-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">➕ Add Custom URL / Domain:</span>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="simpleCustomUrlInput" placeholder="Paste URL e.g. mycompany.com" style="flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; color: white; font-size: 11px; outline: none;">
+          <button id="simpleAddTrustBtn" class="btn btn-outline-trust" style="padding: 4px 10px; font-size: 11px; width: auto;">Trust</button>
+          <button id="simpleAddBlockBtn" class="btn btn-outline-danger" style="padding: 4px 10px; font-size: 11px; width: auto;">Block</button>
+        </div>
+        <div id="simpleAddMsg" style="font-size: 10px; color: var(--accent-safe); display: none;">URL added successfully!</div>
+      </div>
+
       <!-- Quick Link to Advanced Mode -->
       <div class="simple-link-row">
         <button id="openAdvancedViewBtn" class="simple-link-btn">
