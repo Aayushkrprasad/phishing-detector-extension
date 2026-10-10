@@ -3,23 +3,31 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  let currentMode = "WHITELIST"; // or "BLACKLIST"
+  let currentMode = "WHITELIST"; // "WHITELIST", "BLACKLIST", or "PROTECTED"
 
   loadLists();
   setupEventListeners();
 
   function loadLists() {
-    chrome.storage.local.get(["trustedSites", "customBlacklist", "vtApiKey"], (res) => {
+    chrome.storage.local.get(["trustedSites", "customBlacklist", "customProtectedSites", "vtApiKey"], (res) => {
       const trusted = res.trustedSites || [];
       const blacklist = res.customBlacklist || [];
+      const protectedList = res.customProtectedSites || [];
+
       if (res.vtApiKey && document.getElementById("vtApiKeyInput")) {
         document.getElementById("vtApiKeyInput").value = res.vtApiKey;
       }
 
       document.getElementById("whitelistCount").textContent = `(${trusted.length})`;
       document.getElementById("blacklistCount").textContent = `(${blacklist.length})`;
+      const protCountEl = document.getElementById("protectedCount");
+      if (protCountEl) protCountEl.textContent = `(${protectedList.length})`;
 
-      renderCurrentList(currentMode === "WHITELIST" ? trusted : blacklist);
+      let activeItems = trusted;
+      if (currentMode === "BLACKLIST") activeItems = blacklist;
+      else if (currentMode === "PROTECTED") activeItems = protectedList;
+
+      renderCurrentList(activeItems);
     });
   }
 
@@ -39,8 +47,9 @@ document.addEventListener("DOMContentLoaded", () => {
     items.forEach((domain, idx) => {
       const itemEl = document.createElement("div");
       itemEl.className = "site-item";
+      const icon = currentMode === "WHITELIST" ? "🛡️" : currentMode === "BLACKLIST" ? "🚫" : "👑";
       itemEl.innerHTML = `
-        <span class="site-domain">${currentMode === "WHITELIST" ? "🛡️" : "🚫"} ${escapeHtml(domain)}</span>
+        <span class="site-domain">${icon} ${escapeHtml(domain)}</span>
         <button class="btn-remove" data-idx="${idx}">Remove</button>
       `;
 
@@ -52,8 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function getStorageKey() {
+    if (currentMode === "BLACKLIST") return "customBlacklist";
+    if (currentMode === "PROTECTED") return "customProtectedSites";
+    return "trustedSites";
+  }
+
   function removeDomain(index) {
-    const storageKey = currentMode === "WHITELIST" ? "trustedSites" : "customBlacklist";
+    const storageKey = getStorageKey();
     chrome.storage.local.get([storageKey], (res) => {
       let list = res[storageKey] || [];
       list.splice(index, 1);
@@ -66,29 +81,49 @@ document.addEventListener("DOMContentLoaded", () => {
   function setupEventListeners() {
     const tabWhitelist = document.getElementById("tabWhitelist");
     const tabBlacklist = document.getElementById("tabBlacklist");
+    const tabProtected = document.getElementById("tabCustomProtected");
     const formTitle = document.getElementById("formTitle");
     const currentListTitle = document.getElementById("currentListTitle");
     const addBtn = document.getElementById("addBtn");
 
-    tabWhitelist.addEventListener("click", () => {
-      currentMode = "WHITELIST";
-      tabWhitelist.className = "tab-btn active-whitelist";
-      tabBlacklist.className = "tab-btn";
-      formTitle.textContent = "Add Trusted Domain (Bypasses Threat Warnings)";
-      currentListTitle.textContent = "CONFIGURED TRUSTED DOMAINS";
-      addBtn.className = "btn btn-add-safe";
-      loadLists();
-    });
+    if (tabWhitelist) {
+      tabWhitelist.addEventListener("click", () => {
+        currentMode = "WHITELIST";
+        tabWhitelist.className = "tab-btn active-whitelist";
+        if (tabBlacklist) tabBlacklist.className = "tab-btn";
+        if (tabProtected) tabProtected.className = "tab-btn";
+        formTitle.textContent = "Add Trusted Domain (Bypasses Threat Warnings)";
+        currentListTitle.textContent = "CONFIGURED TRUSTED DOMAINS";
+        addBtn.className = "btn btn-add-safe";
+        loadLists();
+      });
+    }
 
-    tabBlacklist.addEventListener("click", () => {
-      currentMode = "BLACKLIST";
-      tabBlacklist.className = "tab-btn active-blacklist";
-      tabWhitelist.className = "tab-btn";
-      formTitle.textContent = "Add Blacklisted Domain (Always Blocks & Warns)";
-      currentListTitle.textContent = "CONFIGURED BLACKLISTED DOMAINS";
-      addBtn.className = "btn btn-add-danger";
-      loadLists();
-    });
+    if (tabBlacklist) {
+      tabBlacklist.addEventListener("click", () => {
+        currentMode = "BLACKLIST";
+        tabBlacklist.className = "tab-btn active-blacklist";
+        if (tabWhitelist) tabWhitelist.className = "tab-btn";
+        if (tabProtected) tabProtected.className = "tab-btn";
+        formTitle.textContent = "Add Blacklisted Domain (Always Blocks & Warns)";
+        currentListTitle.textContent = "CONFIGURED BLACKLISTED DOMAINS";
+        addBtn.className = "btn btn-add-danger";
+        loadLists();
+      });
+    }
+
+    if (tabProtected) {
+      tabProtected.addEventListener("click", () => {
+        currentMode = "PROTECTED";
+        tabProtected.className = "tab-btn active-whitelist";
+        if (tabWhitelist) tabWhitelist.className = "tab-btn";
+        if (tabBlacklist) tabBlacklist.className = "tab-btn";
+        formTitle.textContent = "Add Protected Monitored Brand/URL (Actively Flags Typosquatting Against This Domain)";
+        currentListTitle.textContent = "CONFIGURED MONITORED BRAND URLS";
+        addBtn.className = "btn btn-add-safe";
+        loadLists();
+      });
+    }
 
     // Add Domain Form
     document.getElementById("addDomainForm").addEventListener("submit", (e) => {
@@ -105,19 +140,17 @@ document.addEventListener("DOMContentLoaded", () => {
       val = val.replace(/^www\./, "");
       if (!val) return;
 
-      const storageKey = currentMode === "WHITELIST" ? "trustedSites" : "customBlacklist";
-      const oppositeKey = currentMode === "WHITELIST" ? "customBlacklist" : "trustedSites";
+      const storageKey = getStorageKey();
 
-      chrome.storage.local.get([storageKey, oppositeKey], (res) => {
+      chrome.storage.local.get([storageKey], (res) => {
         let currentList = res[storageKey] || [];
-        let oppositeList = res[oppositeKey] || [];
-
-        // Remove from opposite list if exists
-        oppositeList = oppositeList.filter(d => d !== val);
 
         if (!currentList.includes(val)) {
           currentList.push(val);
-          chrome.storage.local.set({ [storageKey]: currentList, [oppositeKey]: oppositeList }, () => {
+          chrome.storage.local.set({ [storageKey]: currentList }, () => {
+            input.value = "";
+            loadLists();
+          });
             input.value = "";
             loadLists();
           });

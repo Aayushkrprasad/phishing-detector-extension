@@ -25,11 +25,15 @@
 
   // Load preferences from storage
   if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
-    chrome.storage.local.get(["userSettings", "trustedSites"], (res) => {
+    chrome.storage.local.get(["userSettings", "trustedSites", "customProtectedSites"], (res) => {
       if (res.userSettings) {
         userSettings = { ...userSettings, ...res.userSettings };
       }
       window.__pdpTrustedSites = res.trustedSites || [];
+      const protectedList = res.customProtectedSites || [];
+      if (window.ThreatEngine && window.ThreatEngine.registerCustomBrand) {
+        protectedList.forEach(d => window.ThreatEngine.registerCustomBrand(d, d));
+      }
     });
   }
 

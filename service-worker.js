@@ -54,10 +54,15 @@ function evaluateTabSecurity(tabId, url) {
     const parsedUrl = new URL(url);
     const host = parsedUrl.hostname.toLowerCase();
 
-    chrome.storage.local.get(["userSettings", "trustedSites", "customBlacklist", "scanHistory"], (storage) => {
+    chrome.storage.local.get(["userSettings", "trustedSites", "customBlacklist", "customProtectedSites", "scanHistory"], (storage) => {
       const settings = storage.userSettings || {};
       const trusted = storage.trustedSites || [];
       const blacklist = storage.customBlacklist || [];
+      const protectedSites = storage.customProtectedSites || [];
+
+      if (self.ThreatEngine && self.ThreatEngine.registerCustomBrand) {
+        protectedSites.forEach(d => self.ThreatEngine.registerCustomBrand(d, d));
+      }
 
       // Check if protection is explicitly paused
       if (settings.realTimeShieldEnabled === false) {
