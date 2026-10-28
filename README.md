@@ -18,17 +18,29 @@ An enterprise-grade, real-time AI & Heuristic Chrome Extension for phishing, typ
 - **Crypto Clipboard Hijacking (Clipjacking) Sentinel**: Detects and alerts if malicious page scripts attempt to replace copied Bitcoin, Ethereum, or Solana wallet addresses.
 - **Cross-Domain Webhook Exfiltration Interceptor**: Flags forms attempting to exfiltrate submitted form data directly to unauthorized external endpoints (e.g. Discord webhooks or Telegram bots).
 
-### 2. 📧 Email & SMS Social Engineering Text Analyzer
-- Dedicated Text Analyzer tab in the Popup and Security Lab.
-- Evaluates raw email text, SMS, or WhatsApp messages for psychological panic triggers, artificial urgency, fake account suspension warnings, gift card/lottery scams, OTP theft demands, and suspicious embedded URLs.
+### 2. 🤖 AI Code & Prompt Injection Security Sentinel (NEW)
+- **Live In-Page AI Protection**: Observes streaming code responses on ChatGPT, Claude, Gemini, and GitHub.
+- **AI Package Hallucination / Slopsquatting**: Detects hallucinated packages (e.g. `pip install sys` which exploits Python built-ins with malicious supply-chain packages).
+- **Remote Pipe & Shell Interception**: Flags `curl ... | bash`, `irm ... | iex`, reverse shells (`/bin/sh -i`, netcat sockets), and credential exfiltration webhooks (Discord/Telegram).
+- **In-Page Alert Badges & Safe Copy Guard**: Alerts users before copying or executing dangerous AI code.
 
-### 3. 🔍 Instant URL & Phishing Inspector (In-Popup Scanner)
-- Multi-tab popup interface (**Live Tab**, **URL Scanner**, and **Text Analyzer**).
-- Instantly computes mathematical Shannon Entropy, checks against 50+ canonical global brand permutations, inspects TLD risk, and generates a full forensic threat report.
-- **1-Click Copy & PDF Audit Export**: Quickly copy structured forensic audit summaries or print PDF audit reports.
+### 3. 🎓 Academic Thesis Clone & Journal Hijacking Guard (NEW)
+- **Google Scholar In-Page Shield**: Scans search results on `scholar.google.com` to distinguish verified publishers from predatory clone mirrors.
+- **DOI Authority Cross-Referencing**: Extracts Digital Object Identifiers (`10.xxxx/...`) and validates whether the hosting domain matches official publishers (IEEE, Springer, Nature, Elsevier, ACM, arXiv) or an unauthorized paper-mill clone.
+- **Paper Mill & Predatory Fee Flagging**: Identifies fraudulent publication fee demands on hijacked academic journals.
 
-### 4. 🧪 Interactive Threat Simulator & Security Lab (`sandbox.html`)
-A dedicated interactive cybersecurity testbed with 7 hands-on attack modules:
+### 4. 📧 Email & SMS Social Engineering Text & File Analyzer (NEW)
+- Dedicated Text Analyzer tab in the Popup and Security Lab with **Direct File Upload Support** (`.eml`, `.txt`, `.pdf`, `.msg`, `.log`).
+- **Drag-and-Drop / 1-Click Upload**: Extracts text and email headers (Subject, From, Body) directly from saved email files or suspicious documents.
+- Evaluates content for psychological panic triggers, artificial urgency, fake account suspension warnings, gift card/lottery scams, OTP theft demands, and suspicious embedded URLs.
+
+### 5. 🔍 Instant Multi-Vector Inspector (In-Popup Scanner)
+- 5-tab popup interface (**Live Tab**, **URL Scanner**, **Text Analyzer**, **AI Code Guard**, and **Scholar Guard**).
+- Computes mathematical Shannon Entropy, checks against 50+ canonical global brand permutations, inspects TLD risk, and generates full forensic threat audits.
+- **1-Click Copy & PDF Audit Export**: Copy structured forensic summaries or print PDF audit reports.
+
+### 6. 🧪 Interactive Threat Simulator & Security Lab (`sandbox.html`)
+A dedicated interactive cybersecurity testbed with 9 hands-on attack modules:
 1. 🎯 **Typosquatting & Levenshtein Matrix**: Computes dynamic 1-edit distance against top enterprise domains with explanatory threat analysis.
 2. 🎲 **Shannon Entropy & DGA Generator**: Measures information disorder and simulates botnet algorithmic domain generation.
 3. 🔤 **IDN Homoglyph & Punycode Resolver**: De-obfuscates Cyrillic/Greek Unicode lookalikes and `xn--` punycode strings.
@@ -36,8 +48,10 @@ A dedicated interactive cybersecurity testbed with 7 hands-on attack modules:
 5. 🔐 **Credential & Form Hijack Simulator**: Interactive demonstration of real-time form interception and defensive guard banners.
 6. 📧 **Email & SMS Social Engineering Inspector**: Evaluates text message content and extracts embedded threat vectors.
 7. ⚡ **Live Threat Payload Sandbox**: Test custom URLs and payloads with real-time heuristic scoring.
+8. 🤖 **AI Code & Prompt Poisoning Simulator**: Test AI hallucinations, shell pipes, and exfiltration scripts.
+9. 🎓 **Academic Thesis & Journal Hijack Simulator**: Compare authentic IEEE/Nature DOIs vs unauthorized clone mirrors.
 
-### 5. 📊 Security Analytics, Rule Backup & STIX 2.1 / IOC Compliance
+### 7. 📊 Security Analytics, Rule Backup & STIX 2.1 / IOC Compliance
 - Real-time KPI summary cards (Total Scans, Phishing Blocked, Safe Domain Rate %).
 - **JSON Security Rules Import/Export**: Backup Whitelist/Blacklist rules or import external threat list bundles (`trusted.html`).
 - **Export Security Audit Reports** in **CSV**, **JSON**, and standardized **STIX 2.1 IOC** (Indicators of Compromise) for SOC teams.

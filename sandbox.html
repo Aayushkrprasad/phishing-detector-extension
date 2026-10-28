@@ -60,6 +60,12 @@
       <button class="lab-tab" data-tab="tab-payloads">
         <span>⚡ Live Payload Sandbox</span>
       </button>
+      <button class="lab-tab" data-tab="tab-aicode">
+        <span>🤖 AI Code & Prompt Guard</span>
+      </button>
+      <button class="lab-tab" data-tab="tab-scholar">
+        <span>🎓 Academic Thesis & Journal Hijack</span>
+      </button>
     </nav>
 
     <!-- Tab 1: Typosquatting & Levenshtein Distance -->
@@ -393,7 +399,13 @@
             <label>Raw Email or SMS Text</label>
             <textarea id="socialTextInput" class="form-input mono" rows="6" style="resize: vertical;" placeholder="Paste email text e.g. Immediate action required: Your account will be suspended within 24 hours. Verify at http://paypa1.com">Immediate action required: Your account will be suspended within 24 hours. Verify your credentials immediately at http://paypa1-security-check.xyz/login</textarea>
           </div>
-          <button id="runSocialTestBtn" class="btn btn-primary btn-block">Analyze Message Text</button>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <input type="file" id="sandboxSocialFileInput" accept=".txt,.eml,.msg,.pdf,.doc,.docx,.html,.htm,.json,.csv,.log" style="display: none;">
+            <button type="button" id="sandboxSocialUploadBtn" class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span id="sandboxUploadLabel">📁 Upload EML/TXT/PDF File</span>
+            </button>
+            <button id="runSocialTestBtn" class="btn btn-primary" style="flex: 1;">Analyze Message Text</button>
+          </div>
         </div>
 
         <div class="card">
@@ -462,6 +474,135 @@
         <div class="threat-flags-box mt-4">
           <div class="flags-title">Triggered Heuristic Flags:</div>
           <div id="payloadThreatsList" class="threat-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 8: AI Code & Prompt Poisoning Guard -->
+    <section id="tab-aicode" class="lab-section">
+      <div class="section-hero">
+        <div class="hero-text">
+          <h2>🤖 AI Code & Prompt Injection Security Sentinel</h2>
+          <p>Scans AI model responses, chat outputs, and generated code for hidden supply-chain attacks, hallucinated packages (slopsquatting), reverse shells, remote pipe execution, and data exfiltration webhooks.</p>
+        </div>
+        <div class="preset-pills">
+          <span class="preset-label">Attack Presets:</span>
+          <button class="pill-btn-aicode" data-sample="pipe">Remote Shell Pipe (curl | bash)</button>
+          <button class="pill-btn-aicode" data-sample="hallucination">AI Package Hallucination (pip install sys)</button>
+          <button class="pill-btn-aicode" data-sample="revshell">TCP Reverse Shell Backdoor</button>
+          <button class="pill-btn-aicode" data-sample="exfil">AWS Secret Key Exfiltration Webhook</button>
+          <button class="pill-btn-aicode" data-sample="safe">Safe Data Analysis Script</button>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div class="card">
+          <div class="card-title">AI Generated Code / Response Input</div>
+          <div class="form-group">
+            <label>Paste AI Response or Script</label>
+            <textarea id="aiCodeInput" class="form-textarea" rows="11" placeholder="Paste AI code snippet here..."></textarea>
+          </div>
+          <button id="btnScanAiCode" class="btn btn-primary w-full">Inspect AI Output for Security Risks</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Threat Forensics & Supply Chain Analysis</div>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-title">SAFETY SCORE</span>
+              <span id="aiSafetyScoreVal" class="metric-val text-green">100%</span>
+              <span id="aiRiskLevelBadge" class="status-pill status-safe mt-1">SAFE</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-title">LINES INSPECTED</span>
+              <span id="aiLinesCount" class="metric-val">0</span>
+              <span class="metric-sub">Full Heuristic Coverage</span>
+            </div>
+          </div>
+
+          <div class="threat-flags-box mt-4">
+            <div class="flags-title">Identified Vulnerabilities & Exploit Vectors:</div>
+            <div id="aiThreatsList" class="threat-list">
+              <div class="empty-state">No vulnerabilities detected. Enter AI code to analyze.</div>
+            </div>
+          </div>
+
+          <div class="threat-flags-box mt-3" style="background: rgba(30, 41, 59, 0.4);">
+            <div class="flags-title">Security Recommendations:</div>
+            <ul id="aiRecommendationsList" style="margin: 0; padding-left: 18px; font-size: 11px; color: #94a3b8; line-height: 1.5;">
+              <li>Always verify AI-generated packages before installing.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 9: Academic Thesis & Journal Hijack Guard -->
+    <section id="tab-scholar" class="lab-section">
+      <div class="section-hero">
+        <div class="hero-text">
+          <h2>🎓 Academic Thesis Clone & Journal Hijacking Sentinel</h2>
+          <p>Guards Google Scholar research papers, master's theses, and academic publications against predatory cloned journals, mirror link manipulation, and unauthorized paper mills exploiting official DOIs.</p>
+        </div>
+        <div class="preset-pills">
+          <span class="preset-label">Academic Scenarios:</span>
+          <button class="pill-btn-scholar" data-sample="ieee-auth">Authentic IEEE Paper (ieeexplore.ieee.org)</button>
+          <button class="pill-btn-scholar" data-sample="ieee-hijack">🚨 Cloned IEEE Mirror (ieee-xplore.xyz)</button>
+          <button class="pill-btn-scholar" data-sample="springer-hijack">🚨 Hijacked Nature/Springer Clone (nature-publishing.net)</button>
+          <button class="pill-btn-scholar" data-sample="arxiv-auth">Official arXiv Preprint (arxiv.org)</button>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div class="card">
+          <div class="card-title">Paper Link / Digital Object Identifier (DOI)</div>
+          <div class="form-group">
+            <label>Publication URL or DOI String</label>
+            <input type="text" id="scholarInputUrl" class="form-input" placeholder="e.g. 10.1109/CVPR.2023.123 or https://..." value="https://ieeexplore.ieee.org/document/10123456?doi=10.1109/CVPR.2023.123">
+          </div>
+          <div class="form-group">
+            <label>Page Context / Fee Text (Optional paper-mill detection)</label>
+            <input type="text" id="scholarContextText" class="form-input" placeholder="Optional: e.g. Fast-track publication fee $500" value="">
+          </div>
+          <button id="btnScanScholar" class="btn btn-primary w-full">Verify Academic Authenticity</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Journal Authority & Thesis Integrity Audit</div>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-title">JOURNAL STATUS</span>
+              <span id="scholarStatusBadge" class="status-pill status-safe mt-1">AUTHENTIC_PUBLISHER</span>
+              <span id="scholarRiskVal" class="metric-sub text-green">Risk Score: 0/100</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-title">REGISTERED DOI</span>
+              <span id="scholarDoiVal" class="metric-val text-blue" style="font-size: 13px;">10.1109/...</span>
+              <span class="metric-sub">Cross-Referenced</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-title">EXPECTED PUBLISHER</span>
+              <span id="scholarPublisherVal" class="metric-val" style="font-size: 12px;">IEEE</span>
+              <span class="metric-sub">Official Registry Authority</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-title">DETECTED HOST</span>
+              <span id="scholarHostVal" class="metric-val" style="font-size: 12px;">ieeexplore.ieee.org</span>
+              <span class="metric-sub">Host Domain Match</span>
+            </div>
+          </div>
+
+          <div class="threat-flags-box mt-4">
+            <div class="flags-title">Integrity Alerts & Clone Assessment:</div>
+            <div id="scholarThreatsList" class="threat-list"></div>
+          </div>
+
+          <div class="threat-flags-box mt-3" style="background: rgba(30, 41, 59, 0.4);">
+            <div class="flags-title">Academic Citation Advice:</div>
+            <ul id="scholarRecommendationsList" style="margin: 0; padding-left: 18px; font-size: 11px; color: #94a3b8; line-height: 1.5;">
+              <li>Verified official publication. Safe to cite and reference.</li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>

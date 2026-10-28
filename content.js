@@ -565,12 +565,176 @@
     } catch(e) {}
   }
 
+  // -------------------------------------------------------------
+  // 6. AI Code & Output Malicious Payload Sentinel
+  // -------------------------------------------------------------
+  function initAICodeSentinel() {
+    if (!window.ThreatEngine || !window.ThreatEngine.evaluateAICodeIntegrity) return;
+
+    function scanCodeElement(el) {
+      if (!el || el.__pdpScanned) return;
+      el.__pdpScanned = true;
+
+      const codeText = el.innerText || el.textContent || "";
+      if (codeText.trim().length < 15) return; // ignore tiny snippets
+
+      const evaluation = window.ThreatEngine.evaluateAICodeIntegrity(codeText);
+      if (evaluation.riskLevel === "MALICIOUS" || evaluation.threats.length > 0) {
+        const topThreat = evaluation.threats[0];
+        
+        // Find container to attach banner
+        const container = el.closest("pre") || el.closest(".code-block") || el;
+        if (container.parentElement && !container.parentElement.querySelector(".pdp-ai-code-alert")) {
+          const alertBanner = document.createElement("div");
+          alertBanner.className = "pdp-ai-code-alert";
+          alertBanner.innerHTML = `
+            <div class="pdp-ai-alert-left">
+              <span class="pdp-ai-alert-badge">AI Risk Detected</span>
+              <span class="pdp-ai-alert-title">${topThreat.icon || "⚠️"} ${topThreat.type.replace(/_/g, " ")}:</span>
+              <span class="pdp-ai-alert-detail">${topThreat.text}</span>
+            </div>
+            <button type="button" class="pdp-ai-alert-btn" title="Inspect Security Flags">🛡️ Review</button>
+          `;
+
+          alertBanner.querySelector(".pdp-ai-alert-btn").addEventListener("click", () => {
+            alert(`⚠️ AI Code Security Advisory:\n\n• Threat: ${topThreat.text}\n• Risk Score: ${evaluation.riskScore}/100\n\nRecommendation:\n${evaluation.recommendations.join("\n")}`);
+          });
+
+          container.classList.add("pdp-ai-code-wrapper");
+          container.parentElement.insertBefore(alertBanner, container);
+        }
+      }
+    }
+
+    // Initial scan of present code blocks
+    document.querySelectorAll("pre code, pre, .code-block, div[class*='code']").forEach(scanCodeElement);
+
+    // Dynamic observer for streaming responses in ChatGPT, Claude, Gemini
+    const codeObserver = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.addedNodes) {
+          m.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) {
+              if (node.matches && (node.matches("pre, code, .code-block") || node.querySelector("code, pre"))) {
+                setTimeout(() => {
+                  if (node.matches && node.matches("pre, code")) scanCodeElement(node);
+                  node.querySelectorAll?.("pre code, pre, .code-block").forEach(scanCodeElement);
+                }, 400);
+              }
+            }
+          });
+        }
+      }
+    });
+
+    codeObserver.observe(document.body || document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+
+    // Guard on copy: if user copies code containing malicious payloads
+    document.addEventListener("copy", (e) => {
+      const selection = window.getSelection()?.toString() || "";
+      if (selection.length >= 25 && window.ThreatEngine) {
+        const evalResult = window.ThreatEngine.evaluateAICodeIntegrity(selection);
+        if (evalResult.riskLevel === "MALICIOUS") {
+          showToastAlert(
+            "⚠️ Copied AI Code Security Warning",
+            `The copied code contains high-risk elements (${evalResult.threats[0]?.type || "Dangerous Shell Command/Package"}). Inspect carefully before executing in your terminal!`
+          );
+        }
+      }
+    });
+  }
+
+  // -------------------------------------------------------------
+  // 7. Academic Scholar Integrity & Journal Hijacking Sentinel
+  // -------------------------------------------------------------
+  function initAcademicScholarSentinel() {
+    if (!window.ThreatEngine || !window.ThreatEngine.evaluateAcademicPaperIntegrity) return;
+
+    const hostname = window.location.hostname.toLowerCase();
+    const isGoogleScholar = hostname.includes("scholar.google");
+
+    // 1. If on Google Scholar, scan search result destination links
+    if (isGoogleScholar) {
+      function scanScholarResultLinks() {
+        const links = document.querySelectorAll(".gs_rt a, .gs_or_ggsm a, .gs_fl a");
+        links.forEach((link) => {
+          if (link.__pdpScholarScanned || !link.href) return;
+          link.__pdpScholarScanned = true;
+
+          const evalResult = window.ThreatEngine.evaluateAcademicPaperIntegrity(link.href);
+          if (evalResult.status === "AUTHENTIC_PUBLISHER" || evalResult.status === "VERIFIED_REPOSITORY") {
+            const badge = document.createElement("span");
+            badge.className = "pdp-scholar-badge pdp-scholar-verified";
+            badge.title = `Verified Academic Authority: ${evalResult.expectedPublisher || "Official Publisher"}`;
+            badge.innerText = `✓ Verified`;
+            link.parentElement.appendChild(badge);
+          } else if (evalResult.status === "HIJACKED_JOURNAL_CLONE" || evalResult.riskScore >= 60) {
+            const badge = document.createElement("span");
+            badge.className = "pdp-scholar-badge pdp-scholar-hijacked";
+            badge.title = `Warning: High risk of cloned journal / predatory mirror! (${evalResult.threats[0]?.text || "Unauthorized mirror"})`;
+            badge.innerText = `🚨 Hijacked / Clone Risk`;
+            link.parentElement.appendChild(badge);
+          } else if (evalResult.status === "SUSPICIOUS_MIRROR") {
+            const badge = document.createElement("span");
+            badge.className = "pdp-scholar-badge pdp-scholar-unverified";
+            badge.title = "Unverified preprint or secondary academic mirror.";
+            badge.innerText = `⚠️ Unverified Mirror`;
+            link.parentElement.appendChild(badge);
+          }
+        });
+      }
+
+      scanScholarResultLinks();
+      const scholarObserver = new MutationObserver(() => scanScholarResultLinks());
+      scholarObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // 2. If on any web page claiming an Academic DOI, verify publisher authority
+    const doiMeta = document.querySelector('meta[name="citation_doi"], meta[name="dc.identifier"], meta[name="DOI"]');
+    const doiContent = doiMeta?.getAttribute("content") || "";
+    
+    // Check if current page mentions DOI or paper publication
+    const evalCurrentPage = window.ThreatEngine.evaluateAcademicPaperIntegrity(window.location.href + (doiContent ? " " + doiContent : ""), {
+      text: document.title + " " + (document.body?.innerText?.slice(0, 1000) || "")
+    });
+
+    if (evalCurrentPage.status === "HIJACKED_JOURNAL_CLONE" && evalCurrentPage.riskScore >= 70) {
+      if (!document.getElementById("pdp-scholar-hijack-banner")) {
+        const hijackBanner = document.createElement("div");
+        hijackBanner.id = "pdp-scholar-hijack-banner";
+        hijackBanner.className = "pdp-scholar-banner";
+        hijackBanner.innerHTML = `
+          <div class="pdp-scholar-banner-text">
+            <span class="pdp-scholar-banner-icon">🚨</span>
+            <div>
+              <strong>Academic Integrity Alert: Hijacked Journal / Cloned Thesis Repository Detected!</strong>
+              <div style="font-size: 11px; opacity: 0.9;">
+                This website ('${hostname}') is an unauthorized mirror cloning ${evalCurrentPage.expectedPublisher || "an official publication"}. Do not pay fees or submit papers here.
+              </div>
+            </div>
+          </div>
+          <div>
+            ${evalCurrentPage.officialUrl ? `<a href="${evalCurrentPage.officialUrl}" target="_blank" class="pdp-scholar-banner-btn">Go to Official DOI</a>` : ""}
+            <button class="pdp-scholar-banner-close" title="Dismiss">✕</button>
+          </div>
+        `;
+        hijackBanner.querySelector(".pdp-scholar-banner-close").addEventListener("click", () => hijackBanner.remove());
+        document.body.prepend(hijackBanner);
+      }
+    }
+  }
+
   // Initialize in-page tools when DOM is ready
   function initAll() {
     initLinkShield();
     initCredentialGuard();
     initFakeOAuthDetector();
     initClipboardGuard();
+    initAICodeSentinel();
+    initAcademicScholarSentinel();
     checkPageThreatOnLoad();
   }
 

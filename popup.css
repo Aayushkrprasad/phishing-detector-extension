@@ -123,29 +123,36 @@ body {
 
 /* Mode Selector Bar */
 .popup-mode-bar {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.45);
   padding: 3px;
   border-radius: 10px;
   border: 1px solid var(--border-color);
+  scrollbar-width: none;
+}
+
+.popup-mode-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .mode-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 6px;
+  padding: 6px 3px;
   border-radius: 7px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 3px;
 }
 
 .mode-tab:hover {

@@ -228,3 +228,170 @@
 .pdp-toast-close:hover {
   color: #fff;
 }
+
+/* 6. AI Code & Malicious Payload Sentinel */
+.pdp-ai-code-wrapper {
+  position: relative !important;
+}
+
+.pdp-ai-code-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px 8px 0 0;
+  padding: 8px 12px;
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #f8fafc;
+  font-size: 11px;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+  animation: pdpSlideIn 0.3s ease;
+}
+
+.pdp-ai-alert-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.pdp-ai-alert-badge {
+  background: #ef4444;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 9px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.pdp-ai-alert-title {
+  font-weight: 700;
+  color: #fca5a5;
+}
+
+.pdp-ai-alert-detail {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.pdp-ai-alert-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.pdp-ai-alert-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* 7. Academic Scholar Integrity Badges & Banners */
+.pdp-scholar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+  text-decoration: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.3px;
+  transition: transform 0.15s ease;
+}
+
+.pdp-scholar-badge:hover {
+  transform: scale(1.05);
+}
+
+.pdp-scholar-verified {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+.pdp-scholar-hijacked {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+  animation: pdpPulseDanger 2s infinite;
+}
+
+.pdp-scholar-unverified {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+@keyframes pdpPulseDanger {
+  0% { box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 14px rgba(239, 68, 68, 0.8); }
+  100% { box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+}
+
+.pdp-scholar-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #7f1d1d 0%, #1e1b4b 100%);
+  color: #ffffff;
+  padding: 12px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  border-bottom: 2px solid #ef4444;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.pdp-scholar-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pdp-scholar-banner-icon {
+  font-size: 24px;
+}
+
+.pdp-scholar-banner-btn {
+  background: #ef4444;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.pdp-scholar-banner-close {
+  background: transparent;
+  color: #cbd5e1;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+

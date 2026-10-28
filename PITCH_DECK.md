@@ -24,6 +24,8 @@ Phishing Detector Enterprise is a **Zero-Trust On-Device Cyber Defense Agent** t
 - 🎯 **Levenshtein Edit Distance Matrix**: Automatically flags 1-edit typosquatting against top 50 global enterprise brands.
 - 🎲 **Shannon Entropy Meter**: Detects Botnet Algorithmic Domain Generation (DGA).
 - 🔤 **IDN Homoglyph & Punycode Resolver**: De-obfuscates Cyrillic/Greek Unicode lookalikes (`xn--`).
+- 🤖 **AI Code & Supply Chain Sentinel**: Analyzes AI-generated code (ChatGPT/Claude/Gemini) for hallucinated packages (`pip install sys`), remote pipe execution (`curl | bash`), and covert data exfiltration.
+- 🎓 **Academic Thesis & Journal Hijack Guard**: Protects Google Scholar & academic researchers by cross-referencing DOIs against official publishers (IEEE, Nature, Springer, arXiv) to defeat predatory journal clones.
 - 🖼️ **QR Code Quishing Inspector**: Decodes QR code payloads safely inside the browser sandbox.
 - 🔑 **In-Page Credential Guard**: Blocks password harvesting on unencrypted HTTP, fake OAuth dialogs, and cross-domain webhook forms.
 - 📧 **Social Engineering Text NLP**: Analyzes raw email and SMS text for psychological panic triggers and urgency.
@@ -36,7 +38,7 @@ Phishing Detector Enterprise is a **Zero-Trust On-Device Cyber Defense Agent** t
 | :--- | :--- | :--- |
 | **Privacy Model** | ❌ Sends URLs to Cloud | ✅ **100% On-Device Local Processing** |
 | **Evaluation Latency** | ⚠️ 150ms - 400ms (Network delay) | ✅ **<8ms (Sub-millisecond local speed)** |
-| **Vector Coverage** | ⚠️ URL Blacklists only | ✅ **URLs + Homoglyphs + QR + Text NLP + Forms** |
+| **Vector Coverage** | ⚠️ URL Blacklists only | ✅ **URLs + Homoglyphs + QR + AI Code + Thesis Clones + Forms** |
 | **Enterprise SOC Logs** | ❌ No STIX/MISP support | ✅ **STIX 2.1 IOC / CSV / JSON Export** |
 
 ---

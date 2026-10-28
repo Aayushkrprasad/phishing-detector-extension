@@ -485,10 +485,452 @@ const ThreatEngine = (() => {
     CANONICAL_DOMAINS.push(domain);
   }
 
+  /**
+   * Academic Thesis & Journal Hijacking Integrity Engine
+   * Detects:
+   * 1. DOI Registry matching & Authority Cross-Referencing
+   * 2. Hijacked / Cloned Academic Journals (Predatory mirrors masquerading as legitimate journals)
+   * 3. Thesis Link Manipulation & Mirror Spoofing (altering paper hosting to unauthorized clones)
+   * 4. Fake / Predatory Publisher Domain permutations
+   */
+  const ACADEMIC_PUBLISHER_REGISTRY = {
+    "10.1109": { name: "IEEE (Institute of Electrical and Electronics Engineers)", domains: ["ieeexplore.ieee.org", "ieee.org"] },
+    "10.1145": { name: "ACM (Association for Computing Machinery)", domains: ["dl.acm.org", "acm.org"] },
+    "10.1038": { name: "Nature Publishing Group", domains: ["nature.com"] },
+    "10.1007": { name: "Springer Nature", domains: ["link.springer.com", "springer.com"] },
+    "10.1186": { name: "BioMed Central / SpringerOpen", domains: ["biomedcentral.com", "springeropen.com"] },
+    "10.1016": { name: "Elsevier / ScienceDirect", domains: ["sciencedirect.com", "elsevier.com"] },
+    "10.1002": { name: "Wiley Online Library", domains: ["onlinelibrary.wiley.com", "wiley.com"] },
+    "10.1111": { name: "Wiley Online Library", domains: ["onlinelibrary.wiley.com", "wiley.com"] },
+    "10.1126": { name: "Science / AAAS", domains: ["science.org", "sciencemag.org"] },
+    "10.48550": { name: "arXiv Repository (Cornell)", domains: ["arxiv.org"] },
+    "10.1371": { name: "PLOS (Public Library of Science)", domains: ["journals.plos.org", "plos.org"] },
+    "10.1093": { name: "Oxford University Press", domains: ["academic.oup.com", "oup.com"] },
+    "10.1017": { name: "Cambridge University Press", domains: ["cambridge.org"] },
+    "10.1021": { name: "ACS Publications (American Chemical Society)", domains: ["pubs.acs.org", "acs.org"] },
+    "10.1088": { name: "IOP Publishing", domains: ["iopscience.iop.org"] },
+    "10.1073": { name: "PNAS (National Academy of Sciences)", domains: ["pnas.org"] },
+    "10.3390": { name: "MDPI Open Access", domains: ["mdpi.com"] },
+    "10.3389": { name: "Frontiers", domains: ["frontiersin.org"] }
+  };
+
+  const VERIFIED_ACADEMIC_REPOSITORIES = [
+    "scholar.google.com", "arxiv.org", "researchgate.net", "semanticscholar.org",
+    "ncbi.nlm.nih.gov", "pubmed.ncbi.nlm.nih.gov", "jstor.org", "crossref.org",
+    "datacite.org", "doi.org", "dx.doi.org", "ssrn.com", "biorxiv.org", "medrxiv.org",
+    "core.ac.uk", "citeseerx.ist.psu.edu", "zenodo.org", "osf.io"
+  ];
+
+  const ACADEMIC_BRAND_TARGETS = [
+    { name: "IEEE Xplore", domain: "ieeexplore.ieee.org", keywords: ["ieee", "ieeexplore", "ieee-explore"] },
+    { name: "ScienceDirect", domain: "sciencedirect.com", keywords: ["sciencedirect", "science-direct", "elsevier"] },
+    { name: "Springer", domain: "springer.com", keywords: ["springer", "springerlink", "springer-nature"] },
+    { name: "Nature", domain: "nature.com", keywords: ["nature-journal", "nature-publishing"] },
+    { name: "arXiv", domain: "arxiv.org", keywords: ["arxiv", "ar-xiv", "arxiv-mirror"] },
+    { name: "Google Scholar", domain: "scholar.google.com", keywords: ["scholar-google", "googlescholar"] },
+    { name: "ResearchGate", domain: "researchgate.net", keywords: ["researchgate", "research-gate"] }
+  ];
+
+  function evaluateAcademicPaperIntegrity(inputUrlOrDoi, pageContext = {}) {
+    if (!inputUrlOrDoi || typeof inputUrlOrDoi !== "string") {
+      return { riskScore: 0, status: "INVALID_INPUT", threats: [], recommendations: [] };
+    }
+
+    const trimmed = inputUrlOrDoi.trim();
+    let detectedDoi = null;
+    let targetUrl = null;
+    let hostname = "";
+
+    // 1. Detect DOI pattern: 10.xxxx/yyyy
+    const doiMatch = trimmed.match(/\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)\b/i);
+    if (doiMatch) {
+      detectedDoi = doiMatch[1];
+    }
+
+    // 2. Parse Hostname if URL
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      try {
+        const u = new URL(trimmed);
+        hostname = u.hostname.toLowerCase();
+        targetUrl = trimmed;
+      } catch (e) {
+        hostname = trimmed.toLowerCase();
+      }
+    } else if (trimmed.includes(".")) {
+      hostname = trimmed.split("/")[0].toLowerCase();
+    }
+
+    let riskScore = 0;
+    const threats = [];
+    const recommendations = [];
+    let expectedPublisher = null;
+    let officialDomains = [];
+    let status = "UNVERIFIED_SOURCE";
+
+    // 3. Inspect DOI Authority Match
+    if (detectedDoi) {
+      const doiPrefix = detectedDoi.split("/")[0].toLowerCase();
+      const registryEntry = ACADEMIC_PUBLISHER_REGISTRY[doiPrefix];
+
+      if (registryEntry) {
+        expectedPublisher = registryEntry.name;
+        officialDomains = registryEntry.domains;
+
+        const isOfficialHost = officialDomains.some(d => hostname === d || hostname.endsWith("." + d));
+        const isVerifiedRepo = VERIFIED_ACADEMIC_REPOSITORIES.some(r => hostname === r || hostname.endsWith("." + r));
+
+        if (isOfficialHost) {
+          status = "AUTHENTIC_PUBLISHER";
+          riskScore = 0;
+        } else if (isVerifiedRepo) {
+          status = "VERIFIED_REPOSITORY";
+          riskScore = 5;
+        } else if (hostname) {
+          // MISMATCH: Page hosts or claims an official DOI but on an unauthorized domain!
+          status = "HIJACKED_JOURNAL_CLONE";
+          riskScore = 85;
+          threats.push({
+            icon: "🚨",
+            type: "JOURNAL_HIJACK_CLONE",
+            severity: "CRITICAL",
+            text: `Hijacked Journal / Thesis Clone: Paper claims official ${expectedPublisher} DOI (${detectedDoi}) but is hosted on unauthorized domain '${hostname}' instead of '${officialDomains.join(" or ")}'.`
+          });
+          recommendations.push(`Do not pay any article processing fees or submit manuscripts on '${hostname}'.`);
+          recommendations.push(`Access the original verified publication directly at https://doi.org/${detectedDoi}`);
+        }
+      } else {
+        // DOI recognized format, but unknown prefix
+        if (hostname && !VERIFIED_ACADEMIC_REPOSITORIES.some(r => hostname.endsWith(r))) {
+          riskScore += 25;
+          threats.push({
+            icon: "⚠️",
+            type: "UNVERIFIED_DOI_REGISTRY",
+            severity: "MEDIUM",
+            text: `Paper has DOI (${detectedDoi}) from an unverified or independent publisher registry.`
+          });
+        }
+      }
+    }
+
+    // 4. Academic Typosquatting & Predatory Clone Domain Detection
+    if (hostname) {
+      for (const brand of ACADEMIC_BRAND_TARGETS) {
+        const isMatch = hostname === brand.domain || hostname.endsWith("." + brand.domain);
+        if (!isMatch) {
+          // Check keywords
+          for (const kw of brand.keywords) {
+            if (hostname.includes(kw)) {
+              riskScore += 60;
+              threats.push({
+                icon: "🎭",
+                type: "PREDATORY_ACADEMIC_TYPOSQUATTING",
+                severity: "HIGH",
+                text: `Predatory Academic Typosquatting: Domain '${hostname}' mimics legitimate academic portal '${brand.name}' (${brand.domain}).`
+              });
+              recommendations.push(`Beware of cloned paper mills: This domain is not the official ${brand.name}.`);
+              break;
+            }
+          }
+        }
+      }
+
+      // High-risk TLD used for thesis clone
+      const matchedTld = HIGH_RISK_TLDS.find(tld => hostname.endsWith(tld));
+      if (matchedTld) {
+        riskScore += 30;
+        threats.push({
+          icon: "🚩",
+          type: "SUSPICIOUS_ACADEMIC_TLD",
+          severity: "MEDIUM",
+          text: `Paper hosted on high-risk TLD '${matchedTld}' commonly utilized by predatory journals and link cloner proxies.`
+        });
+      }
+    }
+
+    // 5. Check In-Page Context (e.g. predatory paper-mill indicators)
+    const contextText = (pageContext.text || "").toLowerCase();
+    if (contextText.includes("publication fee") || contextText.includes("processing charge") || contextText.includes("fast-track review")) {
+      if (status === "HIJACKED_JOURNAL_CLONE" || riskScore >= 50) {
+        riskScore += 15;
+        threats.push({
+          icon: "💸",
+          type: "PREDATORY_PUBLICATION_FEE",
+          severity: "HIGH",
+          text: "Predatory fee solicitation detected on cloned journal page (Paper Mill monetization scheme)."
+        });
+      }
+    }
+
+    riskScore = Math.min(Math.max(riskScore, 0), 100);
+
+    if (riskScore >= 70 && status !== "AUTHENTIC_PUBLISHER") {
+      status = "HIJACKED_JOURNAL_CLONE";
+    } else if (riskScore >= 30 && status !== "AUTHENTIC_PUBLISHER") {
+      status = "SUSPICIOUS_MIRROR";
+    } else if (riskScore === 0 && !status.includes("AUTHENTIC") && !status.includes("VERIFIED")) {
+      status = "STANDARD_WEB_SOURCE";
+    }
+
+    if (recommendations.length === 0) {
+      if (status === "AUTHENTIC_PUBLISHER" || status === "VERIFIED_REPOSITORY") {
+        recommendations.push("Verified legitimate academic publisher / indexed repository.");
+      } else {
+        recommendations.push("Verify author affiliations and cross-check paper title on Google Scholar or CrossRef before citing.");
+      }
+    }
+
+    return {
+      riskScore,
+      status,
+      doi: detectedDoi,
+      expectedPublisher,
+      officialDomains,
+      actualHost: hostname,
+      officialUrl: detectedDoi ? `https://doi.org/${detectedDoi}` : null,
+      threats,
+      recommendations
+    };
+  }
+
+  /**
+   * AI Code & Output Malicious Payload / Hallucination / Poisoning Sentinel
+   * Analyzes AI-generated code snippets or prompts for:
+   * 1. Dangerous pipe-to-shell pipelines (curl | bash, iwr | iex)
+   * 2. Reverse shells & backdoors (/bin/sh -i, netcat, python socket spawn)
+   * 3. AI Package Hallucinations / Slopsquatting (e.g. pip installing python standard libraries)
+   * 4. Sensitive Credential & Environment Exfiltration
+   * 5. Obfuscated dynamic executions (eval(atob()), exec(bytes.fromhex()))
+   * 6. Invisible Unicode Prompt Injections & Jailbreak steganography
+   */
+  function evaluateAICodeIntegrity(codeOrText) {
+    if (!codeOrText || typeof codeOrText !== "string") {
+      return { safetyScore: 100, riskLevel: "SAFE", threats: [], recommendations: [] };
+    }
+
+    const threats = [];
+    let risk = 0;
+    const lines = codeOrText.split("\n");
+
+    // 1. Remote Execution Pipes
+    const remoteExecPatterns = [
+      { regex: /curl\s+[^|\n]+?\|\s*(bash|sh|zsh|python|perl|powershell|pwsh)/i, desc: "Remote pipe execution (curl ... | bash): Downloads and executes uninspected shell code." },
+      { regex: /wget\s+[^|\n]+?\|\s*(bash|sh|zsh)/i, desc: "Remote pipe execution (wget ... | bash): Unsafe arbitrary script execution." },
+      { regex: /(Invoke-WebRequest|iwr|irm)\s+[^|\n]+?\|\s*(iex|Invoke-Expression)/i, desc: "PowerShell remote payload execution (irm ... | iex)." },
+      { regex: /powershell\s+.*-(e|enc|encodedcommand)\s+[A-Za-z0-9+/=]{16,}/i, desc: "Base64 Encoded PowerShell command execution (hidden malicious payload)." }
+    ];
+
+    // 2. Reverse Shells & Socket Backdoors
+    const reverseShellPatterns = [
+      { regex: /bash\s+-i\s+>\&\s*\/dev\/tcp\//i, desc: "Linux TCP Reverse Shell (/dev/tcp/): Provides remote attacker interactive terminal control." },
+      { regex: /nc(?:\.traditional)?\s+-[a-zA-Z]*e\s+\/bin\/(?:ba)?sh/i, desc: "Netcat reverse shell backdoor (-e /bin/sh)." },
+      { regex: /python(?:\d)?\s+-c\s+["'].*import\s+socket.*subprocess.*pty\.spawn/i, desc: "Python interactive PTY reverse shell backdoor." },
+      { regex: /socket\.socket\(socket\.AF_INET,\s*socket\.SOCK_STREAM\).*connect\(/i, desc: "Direct socket network connection to remote IP: Potential reverse backdoor." }
+    ];
+
+    // 3. Credential & Environment Exfiltration Webhooks
+    const exfilPatterns = [
+      { regex: /(process\.env\.[A-Z0-9_]*(?:SECRET|KEY|TOKEN|PASSWORD|AWS)|os\.environ\[["'].*(?:KEY|SECRET|TOKEN|PASSWORD).*["']\]).*?(fetch|axios|requests\.post|http\.client)/is, desc: "Credential Exfiltration: Script accesses secret API/environment keys and sends them to a network endpoint." },
+      { regex: /https?:\/\/discord(?:app)?\.com\/api\/webhooks\/[0-9]+\/[A-Za-z0-9_-]+/i, desc: "Discord Webhook Exfiltration: Attacker channel used to secretly dump stolen data." },
+      { regex: /https?:\/\/api\.telegram\.org\/bot[0-9]+:[A-Za-z0-9_-]+\/sendMessage/i, desc: "Telegram Bot Exfiltration: Secret bot channel used to exfiltrate credentials." },
+      { regex: /cat\s+(?:\/etc\/passwd|~\/\.ssh\/id_rsa|~\/\.aws\/credentials|\.env)/i, desc: "Sensitive File Access: Script attempts to read system credentials or SSH private keys." }
+    ];
+
+    // 4. Obfuscated Dynamic Execution
+    const obfuscatedPatterns = [
+      { regex: /eval\s*\(\s*(?:atob|Buffer\.from|decodeURIComponent|unescape)\s*\(/i, desc: "Obfuscated Dynamic Execution: eval() with Base64/URI decoded payload." },
+      { regex: /exec\s*\(\s*(?:base64\.b64decode|bytes\.fromhex|zlib\.decompress)\s*\(/i, desc: "Python obfuscated exec() payload unpacking byte streams." },
+      { regex: /Function\s*\(\s*(?:["'][^"']+["']\s*,\s*)*(?:atob|base64)\(/i, desc: "Dynamic Function constructor unpacking obfuscated payload." }
+    ];
+
+    // 5. AI Package Hallucinations / Slopsquatting
+    // Attackers register packages matching standard library modules or hallucinated security libraries
+    const stdLibSquatting = [
+      "sys", "os", "json", "math", "subprocess", "socket", "http",
+      "time", "random", "hashlib", "base64", "shutil", "crypto"
+    ];
+    const knownSquattedPackages = [
+      "requsts", "colourama", "pyttsx4", "beautfulsoup", "lodsh", "cross-env-dev",
+      "flask-jwt-security", "openai-token-manager", "react-safe-auth"
+    ];
+
+    // Scan line by line for precise forensic line numbers
+    lines.forEach((line, idx) => {
+      const lineNum = idx + 1;
+
+      // Remote Pipes
+      for (const p of remoteExecPatterns) {
+        if (p.regex.test(line)) {
+          risk += 45;
+          threats.push({
+            icon: "⚡",
+            type: "REMOTE_PIPE_EXECUTION",
+            severity: "CRITICAL",
+            line: lineNum,
+            text: `Line ${lineNum}: ${p.desc}`,
+            sample: line.trim()
+          });
+        }
+      }
+
+      // Reverse Shells
+      for (const p of reverseShellPatterns) {
+        if (p.regex.test(line)) {
+          risk += 50;
+          threats.push({
+            icon: "🚪",
+            type: "REVERSE_SHELL_BACKDOOR",
+            severity: "CRITICAL",
+            line: lineNum,
+            text: `Line ${lineNum}: ${p.desc}`,
+            sample: line.trim()
+          });
+        }
+      }
+
+      // Exfiltration
+      for (const p of exfilPatterns) {
+        if (p.regex.test(line)) {
+          risk += 40;
+          threats.push({
+            icon: "📤",
+            type: "DATA_EXFILTRATION",
+            severity: "HIGH",
+            line: lineNum,
+            text: `Line ${lineNum}: ${p.desc}`,
+            sample: line.trim()
+          });
+        }
+      }
+
+      // Obfuscation
+      for (const p of obfuscatedPatterns) {
+        if (p.regex.test(line)) {
+          risk += 35;
+          threats.push({
+            icon: "🧬",
+            type: "OBFUSCATED_PAYLOAD",
+            severity: "HIGH",
+            line: lineNum,
+            text: `Line ${lineNum}: ${p.desc}`,
+            sample: line.trim()
+          });
+        }
+      }
+
+      // Package Hallucination in pip/npm
+      const pipMatch = line.match(/(?:pip|pip3)\s+install\s+([a-zA-Z0-9_\-–]+)/i);
+      if (pipMatch) {
+        const pkg = pipMatch[1].toLowerCase();
+        if (stdLibSquatting.includes(pkg)) {
+          risk += 40;
+          threats.push({
+            icon: "📦",
+            type: "AI_PACKAGE_HALLUCINATION",
+            severity: "CRITICAL",
+            line: lineNum,
+            text: `Line ${lineNum}: AI Hallucinated Package 'pip install ${pkg}'. In Python, '${pkg}' is a built-in standard library! Installing an external package named '${pkg}' will download malicious supply-chain malware.`,
+            sample: line.trim()
+          });
+        } else if (knownSquattedPackages.includes(pkg)) {
+          risk += 45;
+          threats.push({
+            icon: "📦",
+            type: "TYPOSQUATTED_PACKAGE",
+            severity: "CRITICAL",
+            line: lineNum,
+            text: `Line ${lineNum}: Malicious Typosquatted Package detected: '${pkg}'.`,
+            sample: line.trim()
+          });
+        }
+      }
+
+      const npmMatch = line.match(/(?:npm|yarn|pnpm)\s+(?:install|add|i)\s+([a-zA-Z0-9_\-–@/]+)/i);
+      if (npmMatch) {
+        const pkg = npmMatch[1].toLowerCase();
+        if (knownSquattedPackages.includes(pkg)) {
+          risk += 45;
+          threats.push({
+            icon: "📦",
+            type: "TYPOSQUATTED_PACKAGE",
+            severity: "CRITICAL",
+            line: lineNum,
+            text: `Line ${lineNum}: Malicious npm dependency detected: '${pkg}'.`,
+            sample: line.trim()
+          });
+        }
+      }
+    });
+
+    // 6. Invisible Unicode Prompt Injection Steganography
+    const zeroWidthRegex = /[\u200B\u200C\u200D\uFEFF\u2060]/g;
+    const zeroWidthMatches = codeOrText.match(zeroWidthRegex);
+    if (zeroWidthMatches && zeroWidthMatches.length >= 3) {
+      risk += 40;
+      threats.push({
+        icon: "🕵️",
+        type: "INVISIBLE_PROMPT_INJECTION",
+        severity: "HIGH",
+        text: `Detected ${zeroWidthMatches.length} hidden zero-width unicode characters (\u200B/\u200C/\uFEFF). Attackers use invisible characters to hide malicious instructions from human code reviewers while influencing AI models.`
+      });
+    }
+
+    // 7. System Prompt Override / Jailbreak
+    const jailbreakKeywords = [
+      "ignore all previous instructions",
+      "system prompt override",
+      "you are now dan",
+      "disregard safety guidelines",
+      "jailbreak mode enabled"
+    ];
+    const textLower = codeOrText.toLowerCase();
+    for (const jw of jailbreakKeywords) {
+      if (textLower.includes(jw)) {
+        risk += 35;
+        threats.push({
+          icon: "🧠",
+          type: "PROMPT_INJECTION_OVERRIDE",
+          severity: "HIGH",
+          text: `Prompt Injection signature detected: '${jw}'. Attempting to override AI system safety instructions.`
+        });
+        break;
+      }
+    }
+
+    risk = Math.min(Math.max(risk, 0), 100);
+    const safetyScore = 100 - risk;
+
+    let riskLevel = "SAFE";
+    if (risk >= 60) riskLevel = "MALICIOUS";
+    else if (risk >= 25) riskLevel = "SUSPICIOUS";
+
+    const recommendations = [];
+    if (riskLevel === "MALICIOUS") {
+      recommendations.push("DO NOT run this code in your terminal, bash, or production environment.");
+      recommendations.push("Inspect third-party package dependencies manually on pypi.org or npmjs.com.");
+      recommendations.push("Check for hidden webhooks or reverse shell connections before executing.");
+    } else if (riskLevel === "SUSPICIOUS") {
+      recommendations.push("Review flagged lines carefully before copying or running.");
+      recommendations.push("Verify that requested libraries are legitimate and required.");
+    } else {
+      recommendations.push("Code passed AI security heuristics check. No known supply-chain or execution exploits detected.");
+    }
+
+    return {
+      riskScore: risk,
+      safetyScore,
+      riskLevel,
+      threats,
+      recommendations,
+      linesScanned: lines.length
+    };
+  }
+
   return {
     PROTECTED_BRANDS,
     CANONICAL_DOMAINS,
     HIGH_RISK_TLDS,
+    ACADEMIC_PUBLISHER_REGISTRY,
+    VERIFIED_ACADEMIC_REPOSITORIES,
     customBrands,
     registerCustomBrand,
     levenshteinDistance,
@@ -497,6 +939,8 @@ const ThreatEngine = (() => {
     getBaseDomain,
     evaluateUrlThreat,
     evaluateTextThreat,
+    evaluateAcademicPaperIntegrity,
+    evaluateAICodeIntegrity,
     queryVirusTotalThreat
   };
 })();
